@@ -1,1 +1,0 @@
-external libraries (.h, .lib, and .dll)

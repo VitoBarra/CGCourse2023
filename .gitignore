@@ -34,3 +34,13 @@
 *.log
 *.tlog
 *.lastbuildstate
+/.idea
+/.vs/CGProject/v17
+/cmake-build-debug
+*.txt
+/.vs/CGProject/FileContentIndex
+/CGProject/x64/Debug
+
+.vs/ComputerGrafica/v17/
+
+.vs/

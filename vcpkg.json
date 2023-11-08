@@ -1,0 +1,29 @@
+{
+  "name" : "computergraphicproject",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "df0a79f8bdef53d03135330d716a517a89f25ab2",
+  "dependencies" : [ {
+    "name" : "glm",
+    "version>=" : "0.9.9.8#2",
+    "$comment" : "  # this is heuristically generated, and may not be correct\n\n  find_package(glm CONFIG REQUIRED)\n\n  target_link_libraries(main PRIVATE glm::glm)\n"
+  }, {
+    "name" : "imgui",
+    "version>=" : "1.89.9",
+    "features" : [ "glfw-binding", "opengl3-binding" ]
+  }, {
+    "name" : "opengl",
+    "version>=" : "2022-12-04#3"
+  }, {
+    "name" : "glfw3",
+    "version>=" : "3.3.8#2"
+  }, {
+    "name" : "glew",
+    "version>=" : "2.2.0#3"
+  }, {
+    "name" : "stb",
+    "version>=" : "2023-04-11#1"
+  }, {
+    "name" : "tinyobjloader",
+    "version>=" : "2.0.0-rc9"
+  } ]
+}
