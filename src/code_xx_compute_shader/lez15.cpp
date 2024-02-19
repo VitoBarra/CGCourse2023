@@ -5,16 +5,24 @@
 #include <algorithm>
 #include <conio.h>
 #include <direct.h>
-#include "../../Utility/Header/source.h"
-#include "../../Utility/Header/renderable.h"
-#include "../../Utility/Header/debugging.h"
-#include "../../Utility/Header/shaders.h"
-#include "../../Utility/Header/simple_shapes.h"
-#include "../../Utility/Header/intersection.h"
-#include "../../Utility/Header/trackball.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "../../Utility/Header/obj_loader.h"
+
+
+#define TINYGLTF_IMPLEMENTATION
+
+#include <stb_image.h>
+#include <stb_image_write.h>
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include "..\common\gltf_loader.h"
+#include "..\common\debugging.h"
+#include "..\common\renderable.h"
+#include "..\common\shaders.h"
+#include "..\common\simple_shapes.h"
+#include "..\common\matrix_stack.h"
+#include "..\common\intersection.h"
+#include "..\common\trackball.h"
 
 
 /*
@@ -36,21 +44,23 @@ int curr_tb;
 glm::mat4 proj;
 
 /* view matrix */
-glm::mat4 view ;
+glm::mat4 view;
 
 
 /* object that will be rendered in this scene*/
 renderable  r_plane;
 
 /* program shaders used */
-shader tex_shader; 
+shader tex_shader;
+
+gltf_model model;
 
 
 void draw_line(glm::vec4 l) {
 	glColor3f(1, 1, 1);
 	glBegin(GL_LINES);
-	glVertex3f(0.0,0.0,0.0);
-	glVertex3f(100*l.x, 100 * l.y, 100 * l.z);
+	glVertex3f(0.0, 0.0, 0.0);
+	glVertex3f(100 * l.x, 100 * l.y, 100 * l.z);
 	glEnd();
 }
 /* callback function called when the mouse is moving */
@@ -76,20 +86,20 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 /* callback function called when a mouse wheel is rotated */
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if(curr_tb == 0)
+	if (curr_tb == 0)
 		tb[0].mouse_scroll(xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
- /* every time any key is presse it switch from controlling trackball tb[0] to tb[1] and viceversa */
- if(action == GLFW_PRESS)
-	 curr_tb = 1 - curr_tb;
+	/* every time any key is presse it switch from controlling trackball tb[0] to tb[1] and viceversa */
+	if (action == GLFW_PRESS)
+		curr_tb = 1 - curr_tb;
 
 }
 void print_info() {
 }
-unsigned int texture;
-	const unsigned int TEXTURE_WIDTH = 512, TEXTURE_HEIGHT = 512;
+unsigned int texture, inputmeshPos,inputmeshId;
+const unsigned int TEXTURE_WIDTH = 1024, TEXTURE_HEIGHT = 1024;
 void create_image() {
 	// texture size
 
@@ -102,19 +112,50 @@ void create_image() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEXTURE_WIDTH, TEXTURE_HEIGHT, 0, GL_RGBA,
 		GL_FLOAT, NULL);
+	glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
-	glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+	check_gl_errors(__LINE__, __FILE__);
+	
+	glGenTextures(1, &inputmeshPos);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, inputmeshPos);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	 
+	float triangle[16] = { 0.0,0.0,-3.0,0, 1.0,0.0,-3.0,0, 0.0,0.5,-3.0 ,0,
+						1.0,0.5,-3.0,0};
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 16, 1, 0, GL_RGBA,GL_FLOAT, triangle);
+	 
+	glBindImageTexture(1, inputmeshPos, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+	 
+
+	glGenTextures(1, &inputmeshId);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, inputmeshId);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	int triangleId[8] = { 0,1,2,0,1,2,3,0 };
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32I, 2, 1, 0, GL_RGBA_INTEGER, GL_INT, triangleId);
+	check_gl_errors(__LINE__, __FILE__);
+	glBindImageTexture(3, inputmeshId, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32I);
+	check_gl_errors(__LINE__, __FILE__);
 }
 
 std::string shaders_path = "../../src/code_XX_compute_shader/shaders/";
 
 unsigned int compute;
 GLint ID;
+int iTime_loc, uWidth_loc, uNTriangles_loc, uBbox_loc;
 void init_compute_shader() {
 
-	std::string source = shader::textFileRead((shaders_path+"compute_shader.comp").c_str());
+	std::string source = shader::textFileRead((shaders_path + "raytracing_octree.comp").c_str());
 	// compute shader
-	const GLchar *d = source.c_str();
+	const GLchar* d = source.c_str();
 	compute = glCreateShader(GL_COMPUTE_SHADER);
 	glShaderSource(compute, 1, &d, NULL);
 	glCompileShader(compute);
@@ -124,12 +165,15 @@ void init_compute_shader() {
 	ID = glCreateProgram();
 	glAttachShader(ID, compute);
 	glLinkProgram(ID);
-
-
+	validate_shader_program(ID);
+	iTime_loc = glGetUniformLocation(ID, "iTime");
+	uWidth_loc = glGetUniformLocation(ID, "uWidth");
+	uNTriangles_loc = glGetUniformLocation(ID, "uNTriangles");
+	uBbox_loc = glGetUniformLocation(ID, "uBbox");
 }
 
 
-int lez15(void)
+int main(int argc, char ** argv)
 {
 	GLFWwindow* window;
 
@@ -137,11 +181,11 @@ int lez15(void)
 	if (!glfwInit())
 		return -1;
 
-//	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-//	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	//	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	//	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
-	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(1000, 800, "code_XX_compute_shader", NULL, NULL);
+		/* Create a windowed mode window and its OpenGL context */
+	window = glfwCreateWindow(TEXTURE_WIDTH, TEXTURE_HEIGHT, "code_XX_compute_shader", NULL, NULL);
 	if (!window)
 	{
 		glfwTerminate();
@@ -163,19 +207,34 @@ int lez15(void)
 
 	printout_opengl_glsl_info();
 
-	
-	create_image();
+
+
 	check_gl_errors(__LINE__, __FILE__);
 	init_compute_shader();
 	check_gl_errors(__LINE__, __FILE__);
 
+	create_image();
+	
+	model.load(argv[1]);
+	model.create_buffers();
+
 	glUseProgram(ID);
-	check_gl_errors(__LINE__, __FILE__);
+	glUniform1i(iTime_loc, 0 * clock());
+	glUniform1i(uWidth_loc, 2048);
+	glUniform1i(uNTriangles_loc, std::max(model.n_tri, 2) );
+
+	float box4[4];
+	box4[0] = model.o.bbox.getMin().x;
+	box4[1] = model.o.bbox.getMin().y;
+	box4[2] = model.o.bbox.getMin().z;
+	box4[3] = model.o.bbox.getLongestEdge();
+
+	glUniform4fv(uBbox_loc, 1, box4);
+	
 	glDispatchCompute((unsigned int)TEXTURE_WIDTH, (unsigned int)TEXTURE_HEIGHT, 1);
-	check_gl_errors(__LINE__, __FILE__);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	check_gl_errors(__LINE__, __FILE__);
-	validate_shader_program(ID);
+	 
+
 	check_gl_errors(__LINE__, __FILE__);
 	/* load the shaders */
 
@@ -193,17 +252,18 @@ int lez15(void)
 	shape_maker::rectangle(s_plane, 10, 10);
 	s_plane.to_renderable(r_plane);
 
-	
 
- 
+
+
 	print_info();
 	/* define the viewport  */
-	glViewport(0, 0, 1000, 800);
+	glViewport(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);
 
 	/* avoid rendering back faces */
 	// uncomment to see the plane disappear when rotating it
-	 glDisable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 
+	int _ = true;
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
@@ -212,18 +272,23 @@ int lez15(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		check_gl_errors(__LINE__, __FILE__);
-		
+		if (_) {
+			// _ = false;
+			glUseProgram(ID);
+			glUniform1i(iTime_loc, clock());
+			glDispatchCompute((unsigned int)TEXTURE_WIDTH, (unsigned int)TEXTURE_HEIGHT, 1);
+		}
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
 
 		glUseProgram(tex_shader.pr);
 		glUniform1i(tex_shader["tex"], 0);
-		glUniformMatrix4fv(tex_shader["uT"], 1, GL_FALSE, &glm::rotate(glm::mat4(1.f), glm::radians(90.f),glm::vec3(1.f, 0.f, 0.f))[0][0]);
+		glUniformMatrix4fv(tex_shader["uT"], 1, GL_FALSE, &glm::rotate(glm::mat4(1.f), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f))[0][0]);
 		r_plane.bind();
 		glDrawElements(GL_TRIANGLES, r_plane.inds[0].count, GL_UNSIGNED_INT, 0);
 		glUseProgram(0);
 
-		
+
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
 
