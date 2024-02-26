@@ -9,7 +9,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include "../../Utility/Header/source.h"
-#include "../../Utility/Header/renderable.h"
+#include "../../Utility/Header/Renderable.h"
 #include "../../Utility/Header/debugging.h"
 #include "../../Utility/Header/shaders.h"
 #include "../../Utility/Header/simple_shapes.h"
@@ -44,10 +44,10 @@ glm::mat4 view ;
 
 
 /* object that will be rendered in this scene*/
-renderable r_cube,r_sphere,r_frame, r_plane,r_line;
+Renderable r_cube,r_sphere,r_frame, r_plane,r_line;
 
-/* program shaders used */
-shader texture_shader,flat_shader;
+/* Program shaders used */
+Shader texture_shader,flat_shader;
 
 
 void draw_line(glm::vec4 l) {
@@ -136,34 +136,34 @@ int lez11_2(void)
 	/* load the shaders */
 	std::string shaders_path = "../../src/code_11_textures/shaders/";
 	texture_shader.create_program((shaders_path+"texture.vert").c_str(), (shaders_path+"texture.frag").c_str());
-	texture_shader.bind("uP");
-	texture_shader.bind("uV");
-	texture_shader.bind("uT");
-	texture_shader.bind("uShadingMode");
-	texture_shader.bind("uDiffuseColor");
-	texture_shader.bind("uTextureImage");
+    texture_shader.RegisterUniformVariable("uP");
+    texture_shader.RegisterUniformVariable("uV");
+    texture_shader.RegisterUniformVariable("uT");
+    texture_shader.RegisterUniformVariable("uShadingMode");
+    texture_shader.RegisterUniformVariable("uDiffuseColor");
+    texture_shader.RegisterUniformVariable("uTextureImage");
 
-	check_shader(texture_shader.vs);
-	check_shader(texture_shader.fs);
-	validate_shader_program(texture_shader.pr);
+	check_shader(texture_shader.VertexShader);
+	check_shader(texture_shader.FragmentShader);
+	validate_shader_program(texture_shader.Program);
 
 	flat_shader.create_program((shaders_path + "texture.vert").c_str(), (shaders_path + "flat.frag").c_str());
-	flat_shader.bind("uP");
-	flat_shader.bind("uV");
-	flat_shader.bind("uT");
-	flat_shader.bind("uColor");
-	check_shader(flat_shader.vs);
-	check_shader(flat_shader.fs);
-	validate_shader_program(flat_shader.pr);
+    flat_shader.RegisterUniformVariable("uP");
+    flat_shader.RegisterUniformVariable("uV");
+    flat_shader.RegisterUniformVariable("uT");
+    flat_shader.RegisterUniformVariable("uColor");
+	check_shader(flat_shader.VertexShader);
+	check_shader(flat_shader.FragmentShader);
+	validate_shader_program(flat_shader.Program);
 
 	/* Set the uT matrix to Identity */
-	glUseProgram(texture_shader.pr);
+	glUseProgram(texture_shader.Program);
 	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
 	glUseProgram(0);
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	/* create a  cube   centered at the origin with side 2*/
 	r_cube = shape_maker::cube(0.5f, 0.3f, 0.0);
@@ -193,7 +193,7 @@ int lez11_2(void)
 	std::string models_path = "../../src/code_11_textures/models/boot";
 	_chdir(models_path.c_str());
 
-	std::vector<renderable> r_cb;
+	std::vector<Renderable> r_cb;
 	load_obj(r_cb, "sh_catWorkBoot.obj");
  	//load_obj(r_cb, "sphere.obj");
 
@@ -205,12 +205,12 @@ int lez11_2(void)
 	view = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 	
 
-	glUseProgram(texture_shader.pr);
+	glUseProgram(texture_shader.Program);
 	glUniformMatrix4fv(texture_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUseProgram(0);
 
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0,1.f);
@@ -238,7 +238,7 @@ int lez11_2(void)
 	float slope = 1.0;
 	float eta_2 = 1.0;
 	/* Loop until the user closes the window */
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 	while (!glfwWindowShouldClose(window))
 	{
 		/* Render here */
@@ -260,7 +260,7 @@ int lez11_2(void)
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 		/* light direction transformed by the trackball tb[1]*/
 		glm::vec4 curr_Ldir = tb[1].matrix()*Ldir;
@@ -270,17 +270,17 @@ int lez11_2(void)
 
 		/* show the plane in flat-wire (filled triangles plus triangle contours) */
 		// step 1: render the edges 
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		r_plane.bind();
 		stack.push();
 		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0,1.0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.inds[1].ind);
 		glDrawElements(GL_LINES, r_plane.inds[1].count, GL_UNSIGNED_INT, 0);
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 		//step 2: render the triangles
-		glUseProgram(texture_shader.pr);
+		glUseProgram(texture_shader.Program);
 
 		// enable polygon offset functionality
 		glEnable(GL_POLYGON_OFFSET_FILL);
@@ -288,7 +288,7 @@ int lez11_2(void)
 		// set offset function 
 		glPolygonOffset(1.0, 1.0);
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 		glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform1i(texture_shader["uShadingMode"], selected);
@@ -302,27 +302,27 @@ int lez11_2(void)
 		//  end flat-wire rendering of the plane
 		
 		// render the reference frame
-		glUseProgram(texture_shader.pr);
+		glUseProgram(texture_shader.Program);
 		glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-		// a negative x component is used to tell the shader to use the vertex color as is (that is, no lighting is computed)
+		// a negative x component is used to tell the Shader to use the vertex color as is (that is, no lighting is computed)
 		glUniform3f(texture_shader["uDiffuseColor"], -1.0, 0.0, 1.0); 
 		r_frame.bind();
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
-		glUseProgram(texture_shader.pr);
+		glUseProgram(texture_shader.Program);
 		glUniform1i(texture_shader["uTextureImage"], 0);
 		glUniform1i(texture_shader["uShadingMode"], selected);
 
-		// uncomment to draw the sphere
-		//r_sphere.bind();
+		// uncomment to DrawElements the sphere
+		//r_sphere.RegisterUniformVariable();
 		//stack.push();
 		//stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.3, 0.3, 0.3)));
 		//glDrawElements(r_sphere.inds[0].elem_type, r_sphere.inds[0].count, GL_UNSIGNED_INT, 0);
 		//stack.pop();
 
 		/*render the loaded object.
-		The object is made of several meshes (== objbects of type "renderable")
+		The object is made of several meshes (== objbects of type "Renderable")
 		*/
 		if (!r_cb.empty()) {
 			stack.push();
@@ -330,14 +330,14 @@ int lez11_2(void)
 			This operation guarantees that the drawing will be inside the unit cube.*/
 			float diag = r_cb[0].bbox.diagonal();
 			stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(1.f / diag, 1.f / diag, 1.f / diag)));
-			check_gl_errors(__LINE__, __FILE__);
+            CheckGLErrors(__LINE__, __FILE__);
 
 			glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 
 			glActiveTexture(GL_TEXTURE0);
 			for (unsigned int is = 0; is < r_cb.size(); is++) {
 				r_cb[is].bind();
-				/* every renderable object has its own material. Here just the diffuse color is used.
+				/* every Renderable object has its own material. Here just the diffuse color is used.
 				ADD HERE CODE TO PASS OTHE MATERIAL PARAMETERS.
 				*/
 				glUniform3fv(texture_shader["uDiffuseColor"],1,&r_cb[is].mtl.diffuse[0]);
@@ -357,7 +357,7 @@ int lez11_2(void)
 		stack.pop();
 
 		r_line.bind();
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		stack.push();
 		stack.mult(tb[1].matrix());
 		 
@@ -370,7 +370,7 @@ int lez11_2(void)
 		stack.pop();
 		glUseProgram(0);
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 		
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);

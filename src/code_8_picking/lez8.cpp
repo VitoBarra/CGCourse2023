@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <conio.h>
 #include "../../Utility/Header/source.h"
-#include "../../Utility/Header/renderable.h"
+#include "../../Utility/Header/Renderable.h"
 #include "../../Utility/Header/debugging.h"
 #include "../../Utility/Header/shaders.h"
 #include "../../Utility/Header/simple_shapes.h"
@@ -41,10 +41,10 @@ glm::mat4  scaling_matrix;
 float scaling_factor;
 
 /* object that will be rendered in this scene*/
-renderable r_cube,r_sphere,r_frame, r_plane;
+Renderable r_cube,r_sphere,r_frame, r_plane;
 
-/* program shaders used */
-shader basic_shader,flat_shader;
+/* Program shaders used */
+Shader basic_shader,flat_shader;
 
 /* transform from viewpoert to window coordinates in thee view reference frame */
 glm::vec2 viewport_to_view(double pX, double pY) {
@@ -202,32 +202,32 @@ int lez8(void)
 
 
 	/* load the shaders */
-	basic_shader.create_program("shaders/basic.vert", "shaders/basic.frag");
-	basic_shader.bind("uP");
-	basic_shader.bind("uV");
-	basic_shader.bind("uT");
-	basic_shader.bind("uColor");
-	check_shader(basic_shader.vs);
-	check_shader(basic_shader.fs);
-	validate_shader_program(basic_shader.pr);
+	basic_shader.create_program("shaders/lez2.vert", "shaders/lez2.frag");
+    basic_shader.RegisterUniformVariable("uP");
+    basic_shader.RegisterUniformVariable("uV");
+    basic_shader.RegisterUniformVariable("uT");
+    basic_shader.RegisterUniformVariable("uColor");
+	check_shader(basic_shader.VertexShader);
+	check_shader(basic_shader.FragmentShader);
+	validate_shader_program(basic_shader.Program);
 
-	flat_shader.create_program("shaders/basic.vert", "shaders/flat.frag");
-	flat_shader.bind("uP");
-	flat_shader.bind("uV");
-	flat_shader.bind("uT");
-	flat_shader.bind("uColor");
-	check_shader(flat_shader.vs);
-	check_shader(flat_shader.fs);
-	validate_shader_program(flat_shader.pr);
+	flat_shader.create_program("shaders/lez2.vert", "shaders/flat.frag");
+    flat_shader.RegisterUniformVariable("uP");
+    flat_shader.RegisterUniformVariable("uV");
+    flat_shader.RegisterUniformVariable("uT");
+    flat_shader.RegisterUniformVariable("uColor");
+	check_shader(flat_shader.VertexShader);
+	check_shader(flat_shader.FragmentShader);
+	validate_shader_program(flat_shader.Program);
 
 	/* Set the uT matrix to Identity */
-	glUseProgram(basic_shader.pr);
+	glUseProgram(basic_shader.Program);
 	glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
 	glUseProgram(0);
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	/* create a  cube   centered at the origin with side 2*/
 	r_cube = shape_maker::cube(0.5f, 0.3f, 0.0);
@@ -239,7 +239,7 @@ int lez8(void)
 
 
 	/* create a  sphere   centered at the origin with radius 1*/
-	renderable r_sphere = shape_maker::sphere();
+	Renderable r_sphere = shape_maker::sphere();
 
 	/* create 3 lines showing the reference frame*/
 	r_frame = shape_maker::frame(4.0);
@@ -255,12 +255,12 @@ int lez8(void)
 	view = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 	view_frame = glm::inverse(view);
 
-	glUseProgram(basic_shader.pr);
+	glUseProgram(basic_shader.Program);
 	glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUseProgram(0);
 
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0,1.f);
@@ -290,14 +290,14 @@ int lez8(void)
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 		stack.push();
 		stack.mult(scaling_matrix *trackball_matrix);
 
 		/* show the plane in flat-wire (filled triangles plus triangle contours) */
 		// step 1: render the plane flat
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		r_plane.bind();
 		stack.push();
 		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
@@ -306,7 +306,7 @@ int lez8(void)
 		glDrawElements(GL_LINES, r_plane.inds[1].count, GL_UNSIGNED_INT, 0);
 
 
-		glUseProgram(basic_shader.pr);
+		glUseProgram(basic_shader.Program);
 
 		// enable polygon offset functionality
 		glEnable(GL_POLYGON_OFFSET_FILL);
@@ -325,7 +325,7 @@ int lez8(void)
 		stack.pop();
 		//  end flat wire
 
-		glUseProgram(basic_shader.pr);
+		glUseProgram(basic_shader.Program);
 		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform3f(basic_shader["uColor"], -1.0, 0.0, 1.0);
 		r_frame.bind();
@@ -337,7 +337,7 @@ int lez8(void)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_cube.ind);
 		
 
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 
 		for (unsigned int id = 0; id < cubes_pos.size(); ++id) {
 			float r = ( (id+200  ) & 0x000000FF) / 255.f;
@@ -354,7 +354,7 @@ int lez8(void)
 		glUseProgram(0);
 		stack.pop();
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 		
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);

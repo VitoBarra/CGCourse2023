@@ -28,7 +28,7 @@ vec3 phong ( vec3 L, vec3 pos, vec3 N){
 void main(void) 
 { 
 	/* lazy trick.  if uDiffuseColor.x is negative, it means I don't want to compute the diffuse lighting, just 
-	pass the per-vertex color attribute to the fragment shader */
+	pass the per-vertex color attribute to the fragment Shader */
 	if(uDiffuseColor.x >= 0){ 
 		vec3 NormalVS= normalize((uV*uT*vec4(aNormal,0.0)).xyz);
 		vec3 LdirVS = (uV*uLdir).xyz;

@@ -1,6 +1,8 @@
 #pragma once
 
-
+#include <string>
+#include <stb_image.h>
+#include <stb_include.h>
 
 struct texture {
 	texture() { }
@@ -12,7 +14,7 @@ struct texture {
 	GLuint load(std::string name, GLuint tu) {
 		unsigned char * data;
 		data = stbi_load(name.c_str(), &x_size, &y_size, &n_components, 0);
-		stbi__vertical_flip(data, x_size, y_size, n_components);
+		//stbi__vertical_flip(data, x_size, y_size, n_components);
 		glActiveTexture(GL_TEXTURE0 + tu);
 		glGenTextures(1, &id);
 		glBindTexture(GL_TEXTURE_2D, id);
@@ -53,7 +55,7 @@ struct texture {
 	}
 
 	GLuint load_cubemap(std::string posx,std::string negx,
-		std::string posy,std::string negy, 
+		std::string posy,std::string negy,
 		std::string posz,std::string negz, 
 		GLuint tu) {
 		unsigned char * data[6];

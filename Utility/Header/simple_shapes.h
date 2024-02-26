@@ -1,8 +1,10 @@
 #pragma once
 #include <vector>
-#include "renderable.h"
+#include "Renderable.h"
 #include <glm/ext.hpp>  
 #include <glm/gtx/string_cast.hpp>
+#include <stb_image.h>
+#include <string>
 
 class shape {
 public:
@@ -18,18 +20,18 @@ public:
 
 	unsigned int vn, fn;
 
-	void to_renderable(renderable & r) {
+	void to_renderable(Renderable & r) {
 		r.create();
-		r.add_vertex_attribute<float>(&positions[0], 3*vn, 0, 3);
+        r.AddVertexAttribute<float>(&positions[0], 3 * vn, 0, 3);
 		if (!normals.empty())
-			r.add_vertex_attribute<float>(&normals[0], 3 * vn, 2, 3);
+            r.AddVertexAttribute<float>(&normals[0], 3 * vn, 2, 3);
 
 		if(!colors.empty())
-			r.add_vertex_attribute<float>(&colors[0], 3 * vn, 1, 3);
+            r.AddVertexAttribute<float>(&colors[0], 3 * vn, 1, 3);
 		if (!texcoords.empty())
-			r.add_vertex_attribute<float>(&texcoords[0], 2 * vn, 3, 2);
+            r.AddVertexAttribute<float>(&texcoords[0], 2 * vn, 3, 2);
 		if (!tangents.empty())
-			r.add_vertex_attribute<float>(&tangents[0], 3 * vn, 4, 3);
+            r.AddVertexAttribute<float>(&tangents[0], 3 * vn, 4, 3);
 		if(!indices.empty())
 			r.add_indices(&indices[0], fn * 3, GL_TRIANGLES);
 		if (!edge_indices.empty())
@@ -162,15 +164,15 @@ struct shape_maker {
 
 	}
 
-	 static renderable cube(float r = 0.5, float g = 0.5, float b = 0.5) {
+	 static Renderable cube(float r = 0.5, float g = 0.5, float b = 0.5) {
 		shape s;
 		cube(s, r, g, b);
-		renderable res;
+		Renderable res;
 		s.to_renderable(res);
 		return res;
 	 }
 
-	 static renderable frame(float scale  = 1.f) {
+	 static Renderable frame(float scale  = 1.f) {
 		 shape  s;
 		 // vertices definition
 		 ////////////////////////////////////////////////////////////
@@ -197,12 +199,12 @@ struct shape_maker {
 		 // LINES definition
 		 ////////////////////////////////////////////////////////////
 		 s.vn = 6;
-		 renderable res;
+		 Renderable res;
 		 s.to_renderable(res);
 		 return res;
 	 }
 
-	 static renderable line(float length = 1.f) {
+	 static Renderable line(float length = 1.f) {
 		 shape  s;
 		 // vertices definition
 		 ////////////////////////////////////////////////////////////
@@ -215,7 +217,7 @@ struct shape_maker {
 		 // LINES definition
 		 ////////////////////////////////////////////////////////////
 		 s.vn = 2;
-		 renderable res;
+		 Renderable res;
 		 s.to_renderable(res);
 		 return res;
 	 }
@@ -313,17 +315,17 @@ struct shape_maker {
 		 
 	 }
 
-	static renderable cylinder(int resolution, float r = 0.5, float g = 0.5, float b = 0.5) {
+	static Renderable cylinder(int resolution, float r = 0.5, float g = 0.5, float b = 0.5) {
 			shape s;
 			cylinder(s, resolution, r,g,b);
-			renderable res;
+			Renderable res;
 			s.to_renderable(res);
 			return res;
 	}
 
-	 static renderable quad(){
+	 static Renderable quad(){
 		 shape s;
-		 renderable r;
+		 Renderable r;
 		 s.positions = {-1,-1,0,  1,-1,0, 1,1,0, -1,1,0 };
 		 s.indices   = { 0,1,2, 0,2,3 };
 		 s.vn = 4;
@@ -368,8 +370,8 @@ struct shape_maker {
 		 s.fn = static_cast<unsigned int> (s.indices.size() / 3);
 	 }
 
-	 static renderable rectangle(unsigned int nX, unsigned int nY) {
-		 renderable res;
+	 static Renderable rectangle(unsigned int nX, unsigned int nY) {
+		 Renderable res;
 		 shape s;
 		 rectangle(s, nX, nY);
 		 s.to_renderable(res);
@@ -587,8 +589,8 @@ struct shape_maker {
 		 s.fn = static_cast<unsigned int> (s.indices.size() / 3);
 
 	 }
-	 static renderable sphere() {
-		 renderable res;
+	 static Renderable sphere() {
+		 Renderable res;
 		 shape s;
 		 sphere(s);
 		 s.to_renderable(res);

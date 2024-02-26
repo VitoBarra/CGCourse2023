@@ -25,5 +25,8 @@
   }, {
     "name" : "tinyobjloader",
     "version>=" : "2.0.0-rc9"
+  }, {
+    "name" : "tinygltf",
+    "version>=" : "2.8.20"
   } ]
 }

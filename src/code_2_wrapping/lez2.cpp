@@ -1,13 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <string>
-#include <iostream>
-#include <algorithm>
-#include <random>
 #include <conio.h>
-#include <direct.h>
-#include <imgui.h>
-#include "renderable.h"
+#include "Renderable.h"
 #include "debugging.h"
 #include "shaders.h"
 
@@ -41,11 +35,11 @@ int lez2(void)
                             0.5, 0.5,	// 3nd vertex
                             0.0, 0.5    // 4th vertex
     };
-    renderable r;
+    Renderable r;
     r.create();
 
-	r.add_vertex_attribute<float>(positions, 8, positionAttribIndex, 2);
-	check_gl_errors(__LINE__, __FILE__);
+    r.AddVertexAttribute(positions, 8, positionAttribIndex, 2);
+    CheckGLErrors(__LINE__, __FILE__);
 
     GLuint colorAttribIndex = 1;
     float colors[] =      { 1.0, 0.0, 0.0,  // 1st vertex
@@ -53,21 +47,21 @@ int lez2(void)
                             0.0, 0.0, 1.0,  // 3rd vertex
                             1.0, 1.0, 1.0   // 4th vertex
     };
-    r.add_vertex_attribute<float>(colors, 12, colorAttribIndex, 3);
-	check_gl_errors(__LINE__, __FILE__);
+    r.AddVertexAttribute(colors, 12, colorAttribIndex, 3);
+    CheckGLErrors(__LINE__, __FILE__);
 
 
     GLuint indices[] = { 0,1,2,0,2,3 };
     r.add_indices(indices, 3, GL_TRIANGLES);
 
-	shader basic_shader;
-    basic_shader.create_program("../src/shaders/basic.vert", "../src/shaders/basic.frag");
-	basic_shader.bind("uDelta");
-	check_shader(basic_shader.vs);
-	check_shader(basic_shader.fs);
-    validate_shader_program(basic_shader.pr);
+    Shader basic_shader =*new Shader();
+	basic_shader.create_program("../src/shaders/lez2.vert", "../src/shaders/lez2.frag");
+    basic_shader.RegisterUniformVariable("uDelta");
+	check_shader(basic_shader.VertexShader);
+	check_shader(basic_shader.FragmentShader);
+    validate_shader_program(basic_shader.Program);
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	r.bind();
 
@@ -78,13 +72,13 @@ int lez2(void)
 		it++;
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(basic_shader.pr);
+        glUseProgram(basic_shader.Program);
 
-       /* update the value of uDelta in the fragment shader */
+       /* update the value of uDelta in the fragment Shader */
 		glUniform1f(basic_shader["uDelta"], (it % 100) / 200.0);
 
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL);
-        check_gl_errors(__LINE__,__FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
         glUseProgram(0);
 
         /* Swap front and back buffers */

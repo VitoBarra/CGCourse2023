@@ -60,7 +60,7 @@ struct frame_buffer_object {
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, this->id_tex1, 0);
 
 
-		check_gl_errors(__LINE__, __FILE__, true);
+        CheckGLErrors(__LINE__, __FILE__, true);
 		use_texture_for_depth = _use_texture_for_depth;
 		if (_use_texture_for_depth) {
 			/* texture for depth  attachment*/
@@ -80,7 +80,7 @@ struct frame_buffer_object {
 			glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->id_depth);
 		}
-		check_gl_errors(__LINE__, __FILE__, true);
+        CheckGLErrors(__LINE__, __FILE__, true);
 		int status = glCheckFramebufferStatus (GL_FRAMEBUFFER);
 		check(status);
 		glBindFramebuffer (GL_FRAMEBUFFER, 0);

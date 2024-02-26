@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include "../../Utility/Header/source.h"
-#include "../../Utility/Header/renderable.h"
+#include "../../Utility/Header/Renderable.h"
 #include "../../Utility/Header/debugging.h"
 #include "../../Utility/Header/shaders.h"
 #include "../../Utility/Header/simple_shapes.h"
@@ -174,33 +174,33 @@ int lez6_3(void)
 	printout_opengl_glsl_info();
 
 	/* load the shaders */
-	shader basic_shader;
-	basic_shader.create_program("shaders/basic.vert", "shaders/basic.frag");
-	basic_shader.bind("uP");
-	basic_shader.bind("uV");
-	basic_shader.bind("uT");
-	basic_shader.bind("uColor");
-	check_shader(basic_shader.vs);
-	check_shader(basic_shader.fs);
-	validate_shader_program(basic_shader.pr);
+	Shader basic_shader;
+	basic_shader.create_program("shaders/lez2.vert", "shaders/lez2.frag");
+    basic_shader.RegisterUniformVariable("uP");
+    basic_shader.RegisterUniformVariable("uV");
+    basic_shader.RegisterUniformVariable("uT");
+    basic_shader.RegisterUniformVariable("uColor");
+	check_shader(basic_shader.VertexShader);
+	check_shader(basic_shader.FragmentShader);
+	validate_shader_program(basic_shader.Program);
 
 	/* Set the uT matrix to Identity */
-	glUseProgram(basic_shader.pr);
+	glUseProgram(basic_shader.Program);
 	glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
 	glUseProgram(0);
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	/* create a  cube   centered at the origin with side 2*/
-	renderable r_cube = shape_maker::cube(0.5, 0.3, 0.0);
+	Renderable r_cube = shape_maker::cube(0.5, 0.3, 0.0);
 
 	/* create 3 lines showing the reference frame*/
-	renderable r_frame = shape_maker::frame(4.0);
+	Renderable r_frame = shape_maker::frame(4.0);
 
 	/* create a sphere */
-	renderable r_sphere = shape_maker::sphere();
+	Renderable r_sphere = shape_maker::sphere();
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	/* Transformation to setup the point of view on the scene */
 	proj = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 100.f);
@@ -226,10 +226,10 @@ int lez6_3(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		glUseProgram(basic_shader.pr);
+		glUseProgram(basic_shader.Program);
 		glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 		glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view[0][0]);
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 		stack.push();
 //		stack.mult(view_frame * scaling_matrix*trackball_matrix);
@@ -271,9 +271,7 @@ int lez6_3(void)
 		glDrawArrays(GL_LINES, 0, 6);
 
 
-
-
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 		glUseProgram(0);
 
 		/* Swap front and back buffers */

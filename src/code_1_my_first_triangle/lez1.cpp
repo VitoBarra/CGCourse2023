@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <iostream>
-#include "renderable.h"
+#include "Renderable.h"
 #include "debugging.h"
 
 int lez1(void) {
@@ -63,7 +63,7 @@ int lez1(void) {
     glVertexAttribPointer(colorAttribIndex, 3, GL_FLOAT, false, 20, (void *) 8);
 
     /*  \BEGIN IGNORATE DA QUI IN POI */
-    /* create a vertex shader */
+    /* create a vertex Shader */
     std::string vertex_shader_src = "#version 330\n \
         in vec2 aPosition;\
         in vec3 aColor;\
@@ -80,7 +80,7 @@ int lez1(void) {
     glCompileShader(vertex_shader);
     check_shader(vertex_shader);
 
-    /* create a fragment shader */
+    /* create a fragment Shader */
     std::string fragment_shader_src = "#version 330 \n \
         out vec4 color;\
         in vec3 vColor;\

@@ -9,7 +9,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include "source.h"
-#include "renderable.h"
+#include "Renderable.h"
 #include "debugging.h"
 #include "shaders.h"
 #include "simple_shapes.h"
@@ -62,10 +62,10 @@ matrix_stack stack;
 frame_buffer_object fbo;
 
 /* object that will be rendered in this scene*/
-renderable r_frame, r_plane,r_line,r_torus,r_cube, r_sphere;
+Renderable r_frame, r_plane,r_line,r_torus,r_cube, r_sphere;
 
-/* program shaders used */
-shader texture_shader,flat_shader;
+/* Program shaders used */
+Shader texture_shader,flat_shader;
 
 /* implementation of view controller */
 
@@ -270,37 +270,37 @@ int lez12(void)
 	/* load the shaders */
 	std::string shaders_path = "../../src/code_12_onthefly_coordinates/shaders/";
 	texture_shader.create_program((shaders_path+"texture.vert").c_str(), (shaders_path+"texture.frag").c_str());
-	texture_shader.bind("uP");
-	texture_shader.bind("uV");
-	texture_shader.bind("uLPView");
-	texture_shader.bind("uLPProj");
-	texture_shader.bind("uT");
-	texture_shader.bind("uLdir");
-	texture_shader.bind("uRenderMode");
-	texture_shader.bind("uDiffuseColor");
-	texture_shader.bind("uTextureImage");
-	texture_shader.bind("uBumpmapImage");
-	texture_shader.bind("uNormalmapImage");
-	texture_shader.bind("uSkybox");
-	texture_shader.bind("uReflectionMap");
+    texture_shader.RegisterUniformVariable("uP");
+    texture_shader.RegisterUniformVariable("uV");
+    texture_shader.RegisterUniformVariable("uLPView");
+    texture_shader.RegisterUniformVariable("uLPProj");
+    texture_shader.RegisterUniformVariable("uT");
+    texture_shader.RegisterUniformVariable("uLdir");
+    texture_shader.RegisterUniformVariable("uRenderMode");
+    texture_shader.RegisterUniformVariable("uDiffuseColor");
+    texture_shader.RegisterUniformVariable("uTextureImage");
+    texture_shader.RegisterUniformVariable("uBumpmapImage");
+    texture_shader.RegisterUniformVariable("uNormalmapImage");
+    texture_shader.RegisterUniformVariable("uSkybox");
+    texture_shader.RegisterUniformVariable("uReflectionMap");
 
-	check_shader(texture_shader.vs);
-	check_shader(texture_shader.fs);
-	validate_shader_program(texture_shader.pr);
+	check_shader(texture_shader.VertexShader);
+	check_shader(texture_shader.FragmentShader);
+	validate_shader_program(texture_shader.Program);
 
 	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "flat.frag").c_str());
-	flat_shader.bind("uP");
-	flat_shader.bind("uV");
-	flat_shader.bind("uT");
-	flat_shader.bind("uColor");
-	check_shader(flat_shader.vs);
-	check_shader(flat_shader.fs);
-	validate_shader_program(flat_shader.pr);
+    flat_shader.RegisterUniformVariable("uP");
+    flat_shader.RegisterUniformVariable("uV");
+    flat_shader.RegisterUniformVariable("uT");
+    flat_shader.RegisterUniformVariable("uColor");
+	check_shader(flat_shader.VertexShader);
+	check_shader(flat_shader.FragmentShader);
+	validate_shader_program(flat_shader.Program);
 
 	/* Set the uT matrix to Identity */
-	glUseProgram(texture_shader.pr);
+	glUseProgram(texture_shader.Program);
 	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
 	glUseProgram(0);
 
@@ -344,22 +344,22 @@ int lez12(void)
 	proj = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f,100.f);
 	view = glm::lookAt(glm::vec3(0, 3, 4.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 
-	glUseProgram(texture_shader.pr);
+	glUseProgram(texture_shader.Program);
 	glUniformMatrix4fv(texture_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUniformMatrix4fv(texture_shader["uLPView"], 1, GL_FALSE, &Lproj.view[0][0]);
 	glUniformMatrix4fv(texture_shader["uLPProj"], 1, GL_FALSE, &Lproj.proj[0][0]);
 	glUseProgram(0);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
 	glUseProgram(0);
 	glEnable(GL_DEPTH_TEST);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 	print_info();
 
@@ -404,7 +404,7 @@ int lez12(void)
 		stack.mult(tb[0].matrix());
 
 		stack.push();
-		glUseProgram(texture_shader.pr);
+		glUseProgram(texture_shader.Program);
 		glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
 		glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform4fv(texture_shader["uLdir"], 1, &curr_Ldir[0]);
@@ -412,13 +412,13 @@ int lez12(void)
 		glUniform1i(texture_shader["uTextureImage"], 0);
 		glUniform1i(texture_shader["uSkybox"], 1);
 		glUniform1i(texture_shader["uReflectionMap"], 2);
-		
 
-		check_gl_errors(__LINE__, __FILE__, true);
+
+        CheckGLErrors(__LINE__, __FILE__, true);
 
 		/* on-the-fly computation of the environment  map for the sphere */
 		if( selected == 5 ){		
-			/* draw the scene six times, one for each face of the cube  */
+			/* DrawElements the scene six times, one for each face of the cube  */
 			glm::vec3 tar[6] = { glm::vec3(1.f,0,0),glm::vec3(-1.f,0.f,0),glm::vec3(0.f,1.f,0),glm::vec3(0.f,-1.f,0),glm::vec3(0.f,0,1),glm::vec3(0.f,0,-1.f) };
 			glm::vec3 up[6]  = { glm::vec3(0.0,-1,0),glm::vec3(0.0,-1.f,0),glm::vec3(0.0,0.f,1),glm::vec3(0.0,0.0,-1),glm::vec3(0.f,-1,0),glm::vec3(0.f,-1,0) };
 
@@ -465,7 +465,7 @@ int lez12(void)
 		stack.pop();
 
 		// render the reference frame
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
 		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform3f(flat_shader["uColor"], -1.0, 1.0, 1.0);
@@ -474,14 +474,14 @@ int lez12(void)
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
-		check_gl_errors( __LINE__,__FILE__,true);
+        CheckGLErrors(__LINE__, __FILE__, true);
 		stack.pop();
 
 		// render the light direction
 		stack.push();
 		stack.mult(tb[1].matrix());
 		 
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform3f(flat_shader["uColor"], 1.0,1.0,1.0);
 		r_line.bind();
@@ -491,7 +491,7 @@ int lez12(void)
 		stack.pop();
 
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 	
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

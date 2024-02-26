@@ -9,7 +9,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include "source.h"
-#include "renderable.h"
+#include "Renderable.h"
 #include "debugging.h"
 #include "shaders.h"
 #include "simple_shapes.h"
@@ -81,10 +81,10 @@ matrix_stack stack;
 frame_buffer_object fbo, fbo_blur;
 
 /* object that will be rendered in this scene*/
-renderable r_frame, r_plane,r_line,r_torus,r_cube, r_sphere,r_quad;
+Renderable r_frame, r_plane,r_line,r_torus,r_cube, r_sphere,r_quad;
 
-/* program shaders used */
-shader depth_shader,shadow_shader,flat_shader,fsq_shader,blur_shader;
+/* Program shaders used */
+Shader depth_shader,shadow_shader,flat_shader,fsq_shader,blur_shader;
 
 /* implementation of view controller */
 /* azimuthal and elevation angle*/
@@ -202,14 +202,14 @@ void gui_setup() {
 	ImGui::EndMainMenuBar();
 }
 
-void draw_torus(  shader & sh) {
+void draw_torus(Shader & sh) {
 	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 	r_torus.bind();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_torus.ind);
 	glDrawElements(GL_TRIANGLES, r_torus.in, GL_UNSIGNED_INT, 0);
 }
 
-void draw_plane(  shader & sh) {
+void draw_plane(Shader & sh) {
 	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 	r_plane.bind();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.ind);
@@ -217,27 +217,27 @@ void draw_plane(  shader & sh) {
 }
 
 
-void draw_pole(shader & sh) {
+void draw_pole(Shader & sh) {
 	r_sphere.bind();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.inds[0].ind);
 	glDrawElements(r_sphere.inds[0].elem_type, r_sphere.inds[0].count, GL_UNSIGNED_INT, 0);
 }
 
-void draw_sphere(  shader & sh) {
+void draw_sphere(Shader & sh) {
 	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 	r_sphere.bind();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.ind);
 	glDrawElements(GL_TRIANGLES, r_sphere.in, GL_UNSIGNED_INT, 0);
 }
 
-void draw_cube(shader & sh) {
+void draw_cube(Shader & sh) {
 	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 	r_cube.bind();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_cube.ind);
 	glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
 }
 
-void draw_scene(  shader & sh) {
+void draw_scene(Shader & sh) {
 	if (sh["uDiffuseColor"]) glUniform3f(sh["uDiffuseColor"], 0.6, 0.6, 0.6);
 	stack.push();
 	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(4.0, 4.0, 4.0)));
@@ -251,14 +251,14 @@ void draw_scene(  shader & sh) {
 	draw_plane(sh);
 	stack.pop();
 
-	// draw sphere
+	// DrawElements sphere
 	//stack.push();
 	//stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
 	//stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.5, 0.5, 0.5)));
 	//draw_sphere(sh);
 	//stack.pop();
 
-	// draw pole
+	// DrawElements pole
 	stack.push();
 	stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
 	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.1, 0.5, 0.1)));
@@ -286,7 +286,7 @@ void draw_texture(GLint tex_id ) {
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &at);
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, tex_id);
-	glUseProgram(fsq_shader.pr);
+	glUseProgram(fsq_shader.Program);
 	glUniform1i(fsq_shader["uTexture"], 3);
 	draw_full_screen_quad();
 	glUseProgram(0);
@@ -300,23 +300,23 @@ void blur_texture(GLint tex_id) {
 	glGetIntegerv(GL_ACTIVE_TEXTURE, &at);
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, tex_id);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 	glBindFramebuffer(GL_FRAMEBUFFER,fbo_blur.id_fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_blur.id_tex, 0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glUseProgram(blur_shader.pr);
+	glUseProgram(blur_shader.Program);
 	glUniform2f(blur_shader["uBlur"], 0.0,1.f / fbo_blur.h);
 	glUniform1i(blur_shader["uTexture"], 3);
 	draw_full_screen_quad();
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);	
 	glBindTexture(GL_TEXTURE_2D, fbo_blur.id_tex);
 	glUniform2f(blur_shader["uBlur"], 1.f / fbo_blur.w, 0.0);
 	draw_full_screen_quad();
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 	glUseProgram(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -359,7 +359,7 @@ int lez13(void)
 	
 	printout_opengl_glsl_info();
 
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 	/* load the shaders */
 	std::string shaders_path = "../../src/code_13_shadows/shaders/";
@@ -370,14 +370,14 @@ int lez13(void)
 	blur_shader.create_program((shaders_path + "fsq.vert").c_str(), (shaders_path + "blur.frag").c_str());
 
 	/* Set the uT matrix to Identity */
-	glUseProgram(depth_shader.pr);
+	glUseProgram(depth_shader.Program);
 	glUniformMatrix4fv(depth_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
-	glUseProgram(shadow_shader.pr);
+	glUseProgram(shadow_shader.Program);
 	glUniformMatrix4fv(shadow_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
 	glUseProgram(0);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 	/* create a  long line*/
 	r_line = shape_maker::line(100.f);
 
@@ -393,7 +393,7 @@ int lez13(void)
 	shape  s_torus;
 	shape_maker::torus(s_torus, 0.5, 2.0, 50, 50);
 	s_torus.to_renderable(r_torus);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 	/* create a cube */
 	shape s_cube;
@@ -424,28 +424,28 @@ int lez13(void)
 	proj = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f,100.f);
 	view = glm::lookAt(glm::vec3(0, 3, 4.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 
-	glUseProgram(depth_shader.pr);
+	glUseProgram(depth_shader.Program);
 	glUniformMatrix4fv(depth_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
 	glUniformMatrix4fv(depth_shader["uT"], 1, GL_FALSE, &glm::mat4(1.f)[0][0]);
 	glUseProgram(0);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
-	glUseProgram(shadow_shader.pr);
+	glUseProgram(shadow_shader.Program);
 	glUniformMatrix4fv(shadow_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(shadow_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUniformMatrix4fv(shadow_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
 	glUniform1i(shadow_shader["uShadowMap"], 0);
 	glUniform2i(shadow_shader["uShadowMapSize"], Lproj.sm_size_x, Lproj.sm_size_y);
 	glUseProgram(0);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
-	glUseProgram(flat_shader.pr);
+	glUseProgram(flat_shader.Program);
 	glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 	glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view[0][0]);
 	glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
 	glUseProgram(0);
 	glEnable(GL_DEPTH_TEST);
-	check_gl_errors(__LINE__, __FILE__, true);
+    CheckGLErrors(__LINE__, __FILE__, true);
 
 	print_info();
 
@@ -457,8 +457,8 @@ int lez13(void)
 
 	/* define the viewport  */
 	glViewport(0, 0, 1000, 800);
-	
-	check_gl_errors(__LINE__, __FILE__, true);
+
+    CheckGLErrors(__LINE__, __FILE__, true);
 	fbo.create(Lproj.sm_size_x, Lproj.sm_size_y,true);
 	fbo_blur.create(Lproj.sm_size_x, Lproj.sm_size_y, true);
 
@@ -489,7 +489,7 @@ int lez13(void)
 		glViewport(0, 0, Lproj.sm_size_x, Lproj.sm_size_y);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(depth_shader.pr);
+		glUseProgram(depth_shader.Program);
 
 		Lproj.view_matrix = glm::lookAt(glm::vec3(0, distance_light, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, -1.f))*inverse(tb[1].matrix());
 		Lproj.set_projection(Lproj.view_matrix, box3(2.0));
@@ -515,7 +515,7 @@ int lez13(void)
 
 		glViewport(0, 0, 1000, 800);
 
-		glUseProgram(shadow_shader.pr);
+		glUseProgram(shadow_shader.Program);
 		glUniformMatrix4fv(shadow_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
 		glUniformMatrix4fv(shadow_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
 		glUniformMatrix4fv(shadow_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
@@ -528,7 +528,7 @@ int lez13(void)
 		draw_scene(shadow_shader);
 
 		// render the reference frame
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
 		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform3f(flat_shader["uColor"], -1.0, 1.0, 1.0);
@@ -537,14 +537,14 @@ int lez13(void)
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
-		check_gl_errors(__LINE__, __FILE__, true);
+        CheckGLErrors(__LINE__, __FILE__, true);
 		stack.pop();
 
 
 		r_cube.bind();
 		stack.push();
 		stack.mult(inverse(Lproj.light_matrix()));
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		glUniform3f(flat_shader["uColor"], 0.0, 0.0, 1.0);
 		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_cube.inds[1].ind);
@@ -555,7 +555,7 @@ int lez13(void)
 		stack.push();
 		stack.mult(tb[1].matrix());
 
-		glUseProgram(flat_shader.pr);
+		glUseProgram(flat_shader.Program);
 		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
 		glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
 		r_line.bind();
@@ -572,7 +572,7 @@ swapbuffers:
 		// draw_texture(fbo.id_tex);
 
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 
 		ImGui::Render();

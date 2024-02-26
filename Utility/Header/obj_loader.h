@@ -2,7 +2,7 @@
 
 
 #include <tiny_obj_loader.h>
-#include "renderable.h"
+#include "Renderable.h"
 #include <glm/glm.hpp>  
 #include <glm/ext.hpp>  
 #include <glm/gtx/string_cast.hpp>
@@ -46,7 +46,7 @@ struct v_nor_tex : public std::pair<int,int>{
 	v_nor_tex(int f, int s) { first = f; second =s; }
 };
 
-static void load_obj(std::vector<renderable> & rs, std::string inputfile) {
+static void load_obj(std::vector<Renderable> & rs, std::string inputfile) {
 
 	tinyobj::ObjReaderConfig reader_config = tinyobj::ObjReaderConfig();
 	reader_config.mtl_search_path = "./"; // Path to material files
@@ -181,32 +181,32 @@ static void load_obj(std::vector<renderable> & rs, std::string inputfile) {
 //	std::vector< std::vector< bool> > keep;
 //	create_simple_shapes(mshapes,v_pos.size(),keep);
 //  se si fa lo split bisogna creare gli array buffer per ogni shape
-//  Ogni array buffer è dato da quello originale da cui si cancellano i vertici !keep[][] 
-//  quando una shape è stata create possiamo calcolare il texture space
+//  Ogni array buffer ï¿½ dato da quello originale da cui si cancellano i vertici !keep[][] 
+//  quando una shape ï¿½ stata create possiamo calcolare il texture space
 
-	// resize the vector of renderable
+	// resize the vector of Renderable
 	rs.resize(mshapes.size());
 
     // create the vertex array buffers and share them between all renderables
     rs[0].create();
-    rs[0].add_vertex_attribute(&v_pos[0], (unsigned int)v_pos.size(), 0, 3);
+    rs[0].AddVertexAttribute(&v_pos[0], (unsigned int) v_pos.size(), 0, 3);
     rs[0].bbox = bbox;
 
 	if (!v_norm.empty())
-		rs[0].add_vertex_attribute(&v_norm[0], (unsigned int)v_norm.size(), 2, 3);
+        rs[0].AddVertexAttribute(&v_norm[0], (unsigned int) v_norm.size(), 2, 3);
 
 	if (!v_tcoord.empty())
-		rs[0].add_vertex_attribute(&v_tcoord[0], (unsigned int)v_tcoord.size(), 3, 2);
+        rs[0].AddVertexAttribute(&v_tcoord[0], (unsigned int) v_tcoord.size(), 3, 2);
 	
 	for (unsigned int  i = 1; i < mshapes.size();++i) {
         rs[i].create();
-        rs[i].assign_vertex_attribute(rs[0].vbos[0], (unsigned int)v_pos.size() / 3, 0, 3,GL_FLOAT);
+        rs[i].assign_vertex_attribute(rs[0].VertexAttributeBuffers[0], (unsigned int)v_pos.size() / 3, 0, 3, GL_FLOAT);
 
 		if (!v_norm.empty())
-			rs[i].assign_vertex_attribute(rs[0].vbos[1], (unsigned int)v_norm.size() / 3, 2, 3, GL_FLOAT);
+			rs[i].assign_vertex_attribute(rs[0].VertexAttributeBuffers[1], (unsigned int)v_norm.size() / 3, 2, 3, GL_FLOAT);
 
 		if (!v_tcoord.empty())
-			rs[i].assign_vertex_attribute(rs[0].vbos[2], (unsigned int)v_tcoord.size() / 2, 3, 2, GL_FLOAT);
+			rs[i].assign_vertex_attribute(rs[0].VertexAttributeBuffers[2], (unsigned int)v_tcoord.size() / 2, 3, 2, GL_FLOAT);
 	}
 
     for (unsigned int is = 0; is < mshapes.size();++is) { 

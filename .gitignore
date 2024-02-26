@@ -35,12 +35,12 @@
 *.tlog
 *.lastbuildstate
 /.idea
-/.vs/CGProject/v17
+/.VertexShader/CGProject/v17
 /cmake-build-debug
 *.txt
-/.vs/CGProject/FileContentIndex
+/.VertexShader/CGProject/FileContentIndex
 /CGProject/x64/Debug
 
-.vs/ComputerGrafica/v17/
+.VertexShader/ComputerGrafica/v17/
 
-.vs/
+.VertexShader/

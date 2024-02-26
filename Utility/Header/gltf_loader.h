@@ -1,5 +1,5 @@
 #pragma once
-#include <tinygltf/tiny_gltf.h>
+#include "tiny_gltf.h"
 #include "texture.h"
 #include "debugging.h"
 #include "octree.h"
@@ -47,6 +47,7 @@ struct gltf_model {
             printf("Failed to load .glTF : %s\n", input_filename.c_str());
             exit(-1);
         }
+        return ret;
     }
 
     template <class type>
@@ -55,7 +56,7 @@ struct gltf_model {
         *(int*)&dst[1] = (int)*((type*)&src[1]);
         *(int*)&dst[2] = (int)*((type*)&src[2]);
     }
-    // take a model and fill the buffers to be passed to the compute shader (for ray tracing)
+    // take a model and fill the buffers to be passed to the compute Shader (for ray tracing)
     bool create_buffers() {
 
         unsigned char* _data_vert[2] = { 0,0 };
@@ -140,7 +141,7 @@ struct gltf_model {
                 texture_height = n_vert / max_texture_width + 1;
 
                 // accessor.count how many normals/position
-                // 4 = 3 component + 1 padding because shader does not support rgb32f (without a)
+                // 4 = 3 component + 1 padding because Shader does not support rgb32f (without a)
                 // 4 byte for each float
                 unsigned char*  _data = new unsigned char[texture_height* max_texture_width*4*4];
                 _data_vert[tu - 1] = _data;
@@ -216,7 +217,7 @@ struct gltf_model {
 
         
         // accessor.count how many indices
-        // 4 = 3 component + 1 padding because shader does not support rgb32i (without a)
+        // 4 = 3 component + 1 padding because Shader does not support rgb32i (without a)
         // 4 byte for each integer
         _data = new unsigned char[texture_height * max_texture_width * 4 * 4];
         memset(_data, 0, texture_height* max_texture_width * 4 * 4);
@@ -230,7 +231,7 @@ struct gltf_model {
             case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: copy_triplet<unsigned int>(&((int*)_data)[i * 4], (unsigned int*)&model.buffers[buffer].data[bufferviewOffset + indexAccessor.byteOffset + i * 3 * sizeof(unsigned int)]);    break;
             }
         }
-        check_gl_errors(__LINE__, __FILE__);
+            CheckGLErrors(__LINE__, __FILE__);
     
  if(0)
      for (int i = 0; i < n_tri;++i)
@@ -249,8 +250,8 @@ struct gltf_model {
         // accessor.count
         //accessor.componentType, & model.buffers[buffer].data[0];
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32I, max_texture_width, texture_height, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, _data);
-        
-        check_gl_errors(__LINE__, __FILE__);
+
+            CheckGLErrors(__LINE__, __FILE__);
 
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -259,12 +260,12 @@ struct gltf_model {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
         glBindImageTexture(3, texId, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32UI);
-        check_gl_errors(__LINE__, __FILE__);
+            CheckGLErrors(__LINE__, __FILE__);
 
 
   /*      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
             gBufferState[indexAccessor.bufferView].vb);
-        CheckErrors("bind buffer");
+        CheckErrors("RegisterUniformVariable buffer");
         int mode = -1;
         if (primitive.mode == TINYGLTF_MODE_TRIANGLES) {
             mode = GL_TRIANGLES;
@@ -289,7 +290,7 @@ struct gltf_model {
         }
         glDrawElements(mode, indexAccessor.count, indexAccessor.componentType,
             BUFFER_OFFSET(indexAccessor.byteOffset));
-        CheckErrors("draw elements");
+        CheckErrors("DrawElements elements");
 
         {
             std::map<std::string, int>::const_iterator it(
@@ -326,7 +327,7 @@ struct gltf_model {
         //accessor.componentType, & model.buffers[buffer].data[0];
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32I, max_texture_width, texture_height, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &o.nodes[0]);
 
-        check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -335,7 +336,7 @@ struct gltf_model {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
         glBindImageTexture(4, texIdOct, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32UI);
-        check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 
 
 
@@ -347,7 +348,7 @@ struct gltf_model {
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32I, max_texture_width, texture_height, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT, &o.triangles_id[0]);
         glBindImageTexture(3, texId, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32UI);
-        check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
        
     }
 

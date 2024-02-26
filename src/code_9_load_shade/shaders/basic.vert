@@ -20,7 +20,7 @@ vec3 diffuse ( vec3 L, vec3 pos, vec3 N){
 void main(void) 
 { 
 	/* lazy trick.  if uDiffuseColor.x is negative, it means I don't want to compute the diffuse lighting, just 
-	pass the per-vertex color attribute to the fragment shader */
+	pass the per-vertex color attribute to the fragment Shader */
 	if(uDiffuseColor.x >= 0){ 
 		/* express normal, light directoin and position in view space */
 		vec3 NormalVS= normalize((uV*uT*vec4(aNormal,0.0)).xyz);

@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "source.h"
-#include "renderable.h"
+#include "Renderable.h"
 #include "debugging.h"
 
 

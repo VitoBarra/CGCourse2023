@@ -3,9 +3,14 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include <conio.h>
-#include <direct.h>
-
+#include "source.h"
+#include "Renderable.h"
+#include "debugging.h"
+#include "shaders.h"
+#include "simple_shapes.h"
+#include "trackball.h"
+#include "frame_buffer_object.h"
+#include "gltf_loader.h"
 
 
 #define TINYGLTF_IMPLEMENTATION
@@ -15,14 +20,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
-#include "..\common\gltf_loader.h"
-#include "..\common\debugging.h"
-#include "..\common\renderable.h"
-#include "..\common\shaders.h"
-#include "..\common\simple_shapes.h"
-#include "..\common\matrix_stack.h"
-#include "..\common\intersection.h"
-#include "..\common\trackball.h"
+
 
 
 /*
@@ -48,10 +46,10 @@ glm::mat4 view;
 
 
 /* object that will be rendered in this scene*/
-renderable  r_plane;
+Renderable  r_plane;
 
-/* program shaders used */
-shader tex_shader;
+/* Program shaders used */
+Shader tex_shader;
 
 gltf_model model;
 
@@ -114,7 +112,7 @@ void create_image() {
 		GL_FLOAT, NULL);
 	glBindImageTexture(0, texture, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 	
 	glGenTextures(1, &inputmeshPos);
 	glActiveTexture(GL_TEXTURE1);
@@ -141,9 +139,9 @@ void create_image() {
 
 	int triangleId[8] = { 0,1,2,0,1,2,3,0 };
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32I, 2, 1, 0, GL_RGBA_INTEGER, GL_INT, triangleId);
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 	glBindImageTexture(3, inputmeshId, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32I);
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 }
 
 std::string shaders_path = "../../src/code_XX_compute_shader/shaders/";
@@ -153,15 +151,15 @@ GLint ID;
 int iTime_loc, uWidth_loc, uNTriangles_loc, uBbox_loc;
 void init_compute_shader() {
 
-	std::string source = shader::textFileRead((shaders_path + "raytracing_octree.comp").c_str());
-	// compute shader
+	std::string source = textFileRead((shaders_path + "raytracing_octree.comp").c_str());
+	// compute Shader
 	const GLchar* d = source.c_str();
 	compute = glCreateShader(GL_COMPUTE_SHADER);
 	glShaderSource(compute, 1, &d, NULL);
 	glCompileShader(compute);
 	check_shader(compute);
 
-	// shader Program
+	// Shader Program
 	ID = glCreateProgram();
 	glAttachShader(ID, compute);
 	glLinkProgram(ID);
@@ -208,10 +206,9 @@ int main(int argc, char ** argv)
 	printout_opengl_glsl_info();
 
 
-
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 	init_compute_shader();
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	create_image();
 	
@@ -233,19 +230,19 @@ int main(int argc, char ** argv)
 	
 	glDispatchCompute((unsigned int)TEXTURE_WIDTH, (unsigned int)TEXTURE_HEIGHT, 1);
 	glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	 
 
-	check_gl_errors(__LINE__, __FILE__);
+
+    CheckGLErrors(__LINE__, __FILE__);
 	/* load the shaders */
 
 
 	tex_shader.create_program((shaders_path + "tex.vert").c_str(), (shaders_path + "tex.frag").c_str());
-	tex_shader.bind("tex");
-	tex_shader.bind("uT");
-	check_shader(tex_shader.vs);
-	check_shader(tex_shader.fs);
-	validate_shader_program(tex_shader.pr);
-	check_gl_errors(__LINE__, __FILE__);
+    tex_shader.RegisterUniformVariable("tex");
+    tex_shader.RegisterUniformVariable("uT");
+	check_shader(tex_shader.VertexShader);
+	check_shader(tex_shader.FragmentShader);
+	validate_shader_program(tex_shader.Program);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	/* crete a rectangle*/
 	shape s_plane;
@@ -271,7 +268,7 @@ int main(int argc, char ** argv)
 		glClearColor(0.0, 0.0, 0.0, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 		if (_) {
 			// _ = false;
 			glUseProgram(ID);
@@ -281,7 +278,7 @@ int main(int argc, char ** argv)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-		glUseProgram(tex_shader.pr);
+		glUseProgram(tex_shader.Program);
 		glUniform1i(tex_shader["tex"], 0);
 		glUniformMatrix4fv(tex_shader["uT"], 1, GL_FALSE, &glm::rotate(glm::mat4(1.f), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f))[0][0]);
 		r_plane.bind();

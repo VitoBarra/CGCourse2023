@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include "source.h"
-#include "renderable.h"
+#include "Renderable.h"
 #include "debugging.h"
 #include "shaders.h"
 #include "simple_shapes.h"
@@ -39,32 +39,32 @@ int lez4_1(void)
 
     printout_opengl_glsl_info();
 
-	shader basic_shader;
-    basic_shader.create_program("shaders/basic.vert", "shaders/basic.frag");
-	basic_shader.bind("uP");
-	basic_shader.bind("uV");
-	basic_shader.bind("uT");
-	check_shader(basic_shader.vs);
-	check_shader(basic_shader.fs);
-    validate_shader_program(basic_shader.pr);
+	Shader basic_shader;
+    basic_shader.create_program("../src/shaders/lez4.vert", "../src/shaders/lez4.frag");
+    basic_shader.RegisterUniformVariable("uP");
+    basic_shader.RegisterUniformVariable("uV");
+    basic_shader.RegisterUniformVariable("uT");
+	check_shader(basic_shader.VertexShader);
+	check_shader(basic_shader.FragmentShader);
+    validate_shader_program(basic_shader.Program);
 
 	/* Set the uT matrix to Identity */
-	glUseProgram(basic_shader.pr);
+	glUseProgram(basic_shader.Program);
 	glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
 	glUseProgram(0);
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	/* create a  cube   centered at the origin with side 2*/
-	renderable r_cube	= shape_maker::cube(0.5,0.6,0.0);
+	Renderable r_cube	= shape_maker::cube(0.5, 0.6, 0.0);
 
 	/* create a  cylinder with base on the XZ plane, and height=2*/
-	renderable r_cyl	= shape_maker::cylinder(30,0.2,0.1,0.5);
+	Renderable r_cyl	= shape_maker::cylinder(30, 0.2, 0.1, 0.5);
 
 	/* create 3 lines showing the reference frame*/
-	renderable r_frame	= shape_maker::frame(4.0);
+	Renderable r_frame	= shape_maker::frame(4.0);
 
-	check_gl_errors(__LINE__, __FILE__);
+    CheckGLErrors(__LINE__, __FILE__);
 
 	/* Transformation to setup the point of view on the scene */
 	glm::mat4 proj = glm::perspective(glm::radians(45.f), 1.33f, 0.1f, 100.f);
@@ -86,15 +86,15 @@ int lez4_1(void)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		
 		glm::mat4 M = view*R;
-        glUseProgram(basic_shader.pr);
+        glUseProgram(basic_shader.Program);
 		glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj[0][0]);
 		glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &M[0][0]);
-		check_gl_errors(__LINE__, __FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
 		
 
 		/* render box and cylinders so that the look like a car */
 		/* instructions: you need to set up the matrix to set as the uniform variable
-		uT in the vertex shader (file basic.vert):
+		uT in the vertex Shader (file lez2.vert):
 		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, YOUR_MATRIX_GOES_HERE);
 		before rendering every shape so that the shape is transformed as needed.
 		You will have to render at least once the cube and four times the cylinder.
@@ -111,7 +111,7 @@ int lez4_1(void)
 		r_frame.bind();
 		glDrawArrays(GL_LINES, 0, 6);
 
-        check_gl_errors(__LINE__,__FILE__);
+        CheckGLErrors(__LINE__, __FILE__);
         glUseProgram(0);
 
         /* Swap front and back buffers */

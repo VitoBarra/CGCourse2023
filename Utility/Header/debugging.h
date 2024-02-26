@@ -7,6 +7,9 @@
 #include <vector>
 #include <map>
 
+
+#define GlDebug_CheckError() CheckGLErrors(__LINE__, __FILE__);
+
 static void printout_opengl_glsl_info() {
 	const GLubyte* renderer		= glGetString(GL_RENDERER);
 	const GLubyte* vendor		= glGetString(GL_VENDOR);
@@ -19,7 +22,7 @@ static void printout_opengl_glsl_info() {
 	std::cout << "GLSL Version         :" << glslVersion << std::endl;
 }
 
-static bool check_gl_errors(int line, const char* file, bool exit_on_error = true) {
+static bool CheckGLErrors(int line, const char* file, bool exit_on_error = true) {
 	int err = glGetError();
 	std::string err_string;
 	switch (err) {
@@ -59,7 +62,7 @@ static bool check_gl_errors(int line, const char* file, bool exit_on_error = tru
 }
 
 static bool check_gl_errors( bool exit_on_error = true) {
-		return check_gl_errors(-1, ".", exit_on_error);
+		return CheckGLErrors(-1, ".", exit_on_error);
 	}
 
 static bool check_shader(GLuint s,  bool exit_on_error = true) {
@@ -83,19 +86,19 @@ static bool validate_shader_program(  GLuint  s){
 	GLint res;
 	glValidateProgram(s);
 	glGetProgramiv(s,GL_VALIDATE_STATUS,&res);
-	std::cout << "validation of program " << s << " " << res << std::endl;
+	std::cout << "validation of Program " << s << " " << res << std::endl;
 
 	glGetProgramiv(s,GL_LINK_STATUS,&res);
-	std::cout << "linking of program " << s << " " << res << std::endl;
+	std::cout << "linking of Program " << s << " " << res << std::endl;
 
 	glGetProgramiv(s,GL_ACTIVE_ATTRIBUTES,&res);
-	std::cout << "active attribute of program " << s << " " << res << std::endl;
+	std::cout << "active attribute of Program " << s << " " << res << std::endl;
 
 	glGetProgramiv(s,GL_ACTIVE_UNIFORMS,&res);
-	std::cout << "active uniform  of program " << s << " " << res << std::endl;
+	std::cout << "active uniform  of Program " << s << " " << res << std::endl;
 
 	glGetProgramiv(s,GL_ACTIVE_UNIFORM_MAX_LENGTH,&res);
-	std::cout << "active uniform Max Length of program " << s << " " << res << std::endl;
+	std::cout << "active uniform Max Length of Program " << s << " " << res << std::endl;
 	return (res == 1);
 }
 
