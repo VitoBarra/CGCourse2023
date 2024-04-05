@@ -17,10 +17,27 @@ public:
 
     std::map<std::string, int> ShaderUniformVariable;
 
-    Shader() {    }
+    Shader() {}
+
+    Shader(const std::string *nameV, const std::string *nameF) {
+        create_program(nameV->c_str(), nameF->c_str());
+    }
+
     Shader(const GLchar *nameV, const char *nameF) {
         create_program(nameV, nameF);
     }
+
+    static Shader *CreateShaderFromFile(const char *vertexShader, const char *fragmentShader) {
+        auto *shader = new Shader(vertexShader, fragmentShader);
+
+        check_shader(shader->VertexShader);
+        check_shader(shader->FragmentShader);
+        validate_shader_program(shader->Program);
+
+        GlDebug_CheckError()
+        return shader;
+    }
+
 
     void create_program(const GLchar *nameV, const char *nameF) {
 
@@ -45,6 +62,11 @@ public:
     }
 
 
+    void SetAsCurrentProgram()
+    {
+        glUseProgram(Program);
+    }
+
     void RegisterUniformVariable(std::string name) {
         ShaderUniformVariable[name] = glGetUniformLocation(Program, name.c_str());
     }
@@ -52,6 +74,7 @@ public:
     int operator[](std::string name) {
         return ShaderUniformVariable[name];
     }
+
 
 private:
     bool create_shader(const GLchar *src, unsigned int SHADER_TYPE) {
@@ -102,8 +125,8 @@ private:
             }
         }
     }
-
-
 };
+
+
 
  

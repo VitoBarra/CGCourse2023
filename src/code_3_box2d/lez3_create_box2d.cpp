@@ -24,7 +24,6 @@ Renderable create_box2d(int nx, int ny) {
 
 int lez3(void) {
 
-
     GLFWwindow *window;
 
     /* Initialize the library */
@@ -47,7 +46,7 @@ int lez3(void) {
     printout_opengl_glsl_info();
 
     auto r = create_box2d(2, 2);
-    r.bind();
+    r.SetAsCurrentObjectToRender();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {

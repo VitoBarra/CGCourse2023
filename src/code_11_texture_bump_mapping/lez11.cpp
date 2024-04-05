@@ -28,7 +28,7 @@ and set the path properly.
 #include <glm/ext.hpp>  
 #include <glm/gtx/string_cast.hpp>
 
-/* light direction in world space*/
+/* light direction NumberOfIndices world space*/
 glm::vec4 Ldir;
 
 /* trackballs for controlloing the scene (0) or the light direction (1) */
@@ -44,7 +44,7 @@ glm::mat4 proj;
 glm::mat4 view ;
 
 
-/* object that will be rendered in this scene*/
+/* object that will be rendered NumberOfIndices this scene*/
 Renderable r_frame, r_plane,r_line,r_torus;
 
 /* Program shaders used */
@@ -198,7 +198,7 @@ int lez11_1(void)
 	check_shader(texture_shader.FragmentShader);
 	validate_shader_program(texture_shader.Program);
 
-	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "flat.frag").c_str());
+	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "lez7flat.frag").c_str());
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -285,14 +285,14 @@ int lez11_1(void)
 		/* light direction transformed by the trackball tb[1]*/
 		glm::vec4 curr_Ldir = tb[1].matrix()*Ldir;
 
-		stack.push();
-		stack.mult(tb[0].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[0].matrix());
 
-		stack.push();
+        stack.pushLastElement();
 
 		glUseProgram(texture_shader.Program);
 
-		glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform4fv(texture_shader["uLdir"], 1, &curr_Ldir[0]);
 		glUniform1i(texture_shader["uRenderMode"], selected);
 		glUniform3f(texture_shader["uDiffuseColor"], 0.8f,0.8f,0.8f);
@@ -301,22 +301,24 @@ int lez11_1(void)
 		glUniform1i(texture_shader["uNormalmapImage"], 2);
 
 		switch (selected_mesh) {
-			case 0:	r_plane.bind(); 
+			case 0:
+                r_plane.SetAsCurrentObjectToRender();
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.ind);
-					glDrawElements(GL_TRIANGLES, r_plane.in, GL_UNSIGNED_INT, 0); break;
-			case 1:	r_torus.bind();
+					glDrawElements(GL_TRIANGLES, r_plane.NumberOfIndices, GL_UNSIGNED_INT, 0); break;
+			case 1:
+                r_torus.SetAsCurrentObjectToRender();
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_torus.ind);
-					glDrawElements(GL_TRIANGLES, r_torus.in, GL_UNSIGNED_INT, 0);
+					glDrawElements(GL_TRIANGLES, r_torus.NumberOfIndices, GL_UNSIGNED_INT, 0);
 				break;
 			}
 		stack.pop();
 		
 		// render the reference frame
 		glUseProgram(flat_shader.Program);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], -1.0, 1.0, 1.0);
 
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
@@ -324,13 +326,13 @@ int lez11_1(void)
 		stack.pop();
 
 		// render the light direction
-		stack.push();
-		stack.mult(tb[1].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[1].matrix());
 		 
 		glUseProgram(flat_shader.Program);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], 1.0,1.0,1.0);
-		r_line.bind();
+        r_line.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 2);
 		glUseProgram(0);
 

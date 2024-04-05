@@ -31,7 +31,7 @@ and set the path properly.
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_access.hpp>
 
-/* light direction in world space*/
+/* light direction NumberOfIndices world space*/
 glm::vec4 Ldir;
 
 /* projector */
@@ -61,7 +61,7 @@ matrix_stack stack;
 /* a frame buffer object for the offline rendering*/
 frame_buffer_object fbo;
 
-/* object that will be rendered in this scene*/
+/* object that will be rendered NumberOfIndices this scene*/
 Renderable r_frame, r_plane,r_line,r_torus,r_cube, r_sphere;
 
 /* Program shaders used */
@@ -170,29 +170,29 @@ void gui_setup() {
 }
 
 void draw_torus() {
-	stack.push();
-	stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(1.0, 0.5, 0.0)));
-	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 0.2, 0.2)));
-	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_torus.bind();
+    stack.pushLastElement();
+    stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(1.0, 0.5, 0.0)));
+    stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 0.2, 0.2)));
+	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_torus.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_torus.ind);
-	glDrawElements(GL_TRIANGLES, r_torus.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_torus.NumberOfIndices, GL_UNSIGNED_INT, 0);
 	stack.pop();
 }
 
 void draw_plane() {
-	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_plane.bind();
+	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_plane.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.ind);
-	glDrawElements(GL_TRIANGLES, r_plane.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_plane.NumberOfIndices, GL_UNSIGNED_INT, 0);
 }
 
 void draw_large_cube() {
-	r_cube.bind();
+    r_cube.SetAsCurrentObjectToRender();
 	glUniform1i(texture_shader["uRenderMode"], 2);
 	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &glm::scale(glm::mat4(1.f), glm::vec3(40.0, 40.0, 40.0))[0][0]);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_cube.ind);
-	glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 }
 
 /* used when rendering offscreen to create the environment map on-the-fly*/
@@ -204,13 +204,13 @@ void draw_scene_no_target() {
 }
 
 void draw_sphere() {
-	stack.push();
-	stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
-	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.5, 0.5, 0.5)));
-	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_sphere.bind();
+    stack.pushLastElement();
+    stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
+    stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.5, 0.5, 0.5)));
+	glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_sphere.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.ind);
-	glDrawElements(GL_TRIANGLES, r_sphere.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_sphere.NumberOfIndices, GL_UNSIGNED_INT, 0);
 	stack.pop();
 }
 void draw_scene_target_only() {
@@ -288,7 +288,7 @@ int lez12(void)
 	check_shader(texture_shader.FragmentShader);
 	validate_shader_program(texture_shader.Program);
 
-	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "flat.frag").c_str());
+	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "lez7flat.frag").c_str());
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -400,13 +400,13 @@ int lez12(void)
 		/* light direction transformed by the trackball tb[1]*/
 		glm::vec4 curr_Ldir = tb[1].matrix()*Ldir;
 
-		stack.push();
-		stack.mult(tb[0].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[0].matrix());
 
-		stack.push();
+        stack.pushLastElement();
 		glUseProgram(texture_shader.Program);
 		glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
-		glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform4fv(texture_shader["uLdir"], 1, &curr_Ldir[0]);
 		glUniform1i(texture_shader["uRenderMode"], selected);
 		glUniform1i(texture_shader["uTextureImage"], 0);
@@ -418,7 +418,7 @@ int lez12(void)
 
 		/* on-the-fly computation of the environment  map for the sphere */
 		if( selected == 5 ){		
-			/* DrawElements the scene six times, one for each face of the cube  */
+			/* DrawTriangleElements the scene six times, one for each face of the cube  */
 			glm::vec3 tar[6] = { glm::vec3(1.f,0,0),glm::vec3(-1.f,0.f,0),glm::vec3(0.f,1.f,0),glm::vec3(0.f,-1.f,0),glm::vec3(0.f,0,1),glm::vec3(0.f,0,-1.f) };
 			glm::vec3 up[6]  = { glm::vec3(0.0,-1,0),glm::vec3(0.0,-1.f,0),glm::vec3(0.0,0.f,1),glm::vec3(0.0,0.0,-1),glm::vec3(0.f,-1,0),glm::vec3(0.f,-1,0) };
 
@@ -467,10 +467,10 @@ int lez12(void)
 		// render the reference frame
 		glUseProgram(flat_shader.Program);
 		glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], -1.0, 1.0, 1.0);
 
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
@@ -478,13 +478,13 @@ int lez12(void)
 		stack.pop();
 
 		// render the light direction
-		stack.push();
-		stack.mult(tb[1].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[1].matrix());
 		 
 		glUseProgram(flat_shader.Program);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], 1.0,1.0,1.0);
-		r_line.bind();
+        r_line.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 2);
 		glUseProgram(0);
 

@@ -28,7 +28,7 @@ int lez2(void)
 
     printout_opengl_glsl_info();
 
-    /* create render data in RAM */
+    /* create render data NumberOfIndices RAM */
     GLuint positionAttribIndex = 0;
     float positions[] = {   -0, -0.0,	// 1st vertex
                             0.5, -0.0,  // 2nd vertex
@@ -55,7 +55,7 @@ int lez2(void)
     r.add_indices(indices, 3, GL_TRIANGLES);
 
     Shader basic_shader =*new Shader();
-	basic_shader.create_program("../src/shaders/lez2.vert", "../src/shaders/lez2.frag");
+	basic_shader.create_program("../src/shaders/PositionSinFun.vert", "../src/shaders/JustColor.frag");
     basic_shader.RegisterUniformVariable("uDelta");
 	check_shader(basic_shader.VertexShader);
 	check_shader(basic_shader.FragmentShader);
@@ -63,7 +63,7 @@ int lez2(void)
 
     CheckGLErrors(__LINE__, __FILE__);
 
-	r.bind();
+    r.SetAsCurrentObjectToRender();
 
 	int it = 0;
     /* Loop until the user closes the window */
@@ -74,7 +74,7 @@ int lez2(void)
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(basic_shader.Program);
 
-       /* update the value of uDelta in the fragment Shader */
+       /* update the value of uDelta NumberOfIndices the fragment Shader */
 		glUniform1f(basic_shader["uDelta"], (it % 100) / 200.0);
 
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL);

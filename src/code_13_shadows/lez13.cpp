@@ -32,7 +32,7 @@ and set the path properly.
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_access.hpp>
 
-/* light direction in world space*/
+/* light direction NumberOfIndices world space*/
 glm::vec4 Ldir;
 
 /* projector */
@@ -54,7 +54,7 @@ struct projector {
 	glm::mat4 light_matrix() {
 		return proj_matrix*view_matrix;
 	}
-	// size of the shadow map in texels
+	// size of the shadow map NumberOfIndices texels
 	int sm_size_x, sm_size_y;
 };
 
@@ -80,7 +80,7 @@ matrix_stack stack;
 /* a frame buffer object for the offline rendering*/
 frame_buffer_object fbo, fbo_blur;
 
-/* object that will be rendered in this scene*/
+/* object that will be rendered NumberOfIndices this scene*/
 Renderable r_frame, r_plane,r_line,r_torus,r_cube, r_sphere,r_quad;
 
 /* Program shaders used */
@@ -203,81 +203,81 @@ void gui_setup() {
 }
 
 void draw_torus(Shader & sh) {
-	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_torus.bind();
+	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_torus.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_torus.ind);
-	glDrawElements(GL_TRIANGLES, r_torus.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_torus.NumberOfIndices, GL_UNSIGNED_INT, 0);
 }
 
 void draw_plane(Shader & sh) {
-	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_plane.bind();
+	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_plane.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.ind);
-	glDrawElements(GL_TRIANGLES, r_plane.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_plane.NumberOfIndices, GL_UNSIGNED_INT, 0);
 }
 
 
 void draw_pole(Shader & sh) {
-	r_sphere.bind();
+    r_sphere.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.inds[0].ind);
 	glDrawElements(r_sphere.inds[0].elem_type, r_sphere.inds[0].count, GL_UNSIGNED_INT, 0);
 }
 
 void draw_sphere(Shader & sh) {
-	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_sphere.bind();
+	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_sphere.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.ind);
-	glDrawElements(GL_TRIANGLES, r_sphere.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_sphere.NumberOfIndices, GL_UNSIGNED_INT, 0);
 }
 
 void draw_cube(Shader & sh) {
-	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_cube.bind();
+	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_cube.SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_cube.ind);
-	glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 }
 
 void draw_scene(Shader & sh) {
 	if (sh["uDiffuseColor"]) glUniform3f(sh["uDiffuseColor"], 0.6, 0.6, 0.6);
-	stack.push();
-	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(4.0, 4.0, 4.0)));
+    stack.pushLastElement();
+    stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(4.0, 4.0, 4.0)));
 	draw_plane(sh);
 	stack.pop();
 
 	if (sh["uDiffuseColor"]) glUniform3f(sh["uDiffuseColor"], 0.0, 0.4, 0.5);
-	stack.push();
-	stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(-0.6, 0.3, 0.0)));
-	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 0.2, 0.2)));
+    stack.pushLastElement();
+    stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(-0.6, 0.3, 0.0)));
+    stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 0.2, 0.2)));
 	draw_plane(sh);
 	stack.pop();
 
-	// DrawElements sphere
-	//stack.push();
-	//stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
-	//stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.5, 0.5, 0.5)));
+	// DrawTriangleElements sphere
+	//stack.pushLastElement();
+	//stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
+	//stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.5, 0.5, 0.5)));
 	//draw_sphere(sh);
 	//stack.pop();
 
-	// DrawElements pole
-	stack.push();
-	stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
-	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.1, 0.5, 0.1)));
-	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+	// DrawTriangleElements pole
+    stack.pushLastElement();
+    stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.5, 0.0)));
+    stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.1, 0.5, 0.1)));
+	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 	//draw_sphere(sh);
 	draw_cube(sh);
 	stack.pop();
 
 	// torus	
-	stack.push();
-	stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(1.0, 0.5, 0.0)));
-	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 0.2, 0.2)));
+    stack.pushLastElement();
+    stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(1.0, 0.5, 0.0)));
+    stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 0.2, 0.2)));
 	draw_torus(sh);
 	stack.pop();
 
 }
 
 void draw_full_screen_quad() {
-	r_quad.bind();
+    r_quad.SetAsCurrentObjectToRender();
 	glDrawElements(GL_TRIANGLES, 6,GL_UNSIGNED_INT, 0);
 }
 
@@ -366,7 +366,7 @@ int lez13(void)
 	depth_shader.create_program((shaders_path+"depthmap.vert").c_str(), (shaders_path+"depthmap.frag").c_str());
 	shadow_shader.create_program((shaders_path + "shadow_mapping.vert").c_str(), (shaders_path + "shadow_mapping.frag").c_str());
 	fsq_shader.create_program((shaders_path + "fsq.vert").c_str(), (shaders_path + "fsq.frag").c_str());
-	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "flat.frag").c_str());
+	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "lez7flat.frag").c_str());
 	blur_shader.create_program((shaders_path + "fsq.vert").c_str(), (shaders_path + "blur.frag").c_str());
 
 	/* Set the uT matrix to Identity */
@@ -482,8 +482,8 @@ int lez13(void)
 		/* light direction transformed by the trackball tb[1]*/
 		glm::vec4 curr_Ldir = tb[1].matrix()*Ldir;
 
-		stack.push();
-		stack.mult(tb[0].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[0].matrix());
 
 		glBindFramebuffer(GL_FRAMEBUFFER, fbo.id_fbo);
 		glViewport(0, 0, Lproj.sm_size_x, Lproj.sm_size_y);
@@ -495,7 +495,7 @@ int lez13(void)
 		Lproj.set_projection(Lproj.view_matrix, box3(2.0));
 
 		glUniformMatrix4fv(depth_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
-		glUniformMatrix4fv(depth_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(depth_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform1f(depth_shader["uPlaneApprox"], k_plane_approx);
 
 
@@ -518,7 +518,7 @@ int lez13(void)
 		glUseProgram(shadow_shader.Program);
 		glUniformMatrix4fv(shadow_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
 		glUniformMatrix4fv(shadow_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
-		glUniformMatrix4fv(shadow_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(shadow_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform1fv(shadow_shader["uBias"],1, &depth_bias);
 		glUniform2i(shadow_shader["uShadowMapSize"], Lproj.sm_size_x, Lproj.sm_size_y );
 		glUniform1i(shadow_shader["uRenderMode"], selected_mode);
@@ -530,10 +530,10 @@ int lez13(void)
 		// render the reference frame
 		glUseProgram(flat_shader.Program);
 		glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], -1.0, 1.0, 1.0);
 
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
@@ -541,24 +541,24 @@ int lez13(void)
 		stack.pop();
 
 
-		r_cube.bind();
-		stack.push();
-		stack.mult(inverse(Lproj.light_matrix()));
+        r_cube.SetAsCurrentObjectToRender();
+        stack.pushLastElement();
+        stack.multiply(inverse(Lproj.light_matrix()));
 		glUseProgram(flat_shader.Program);
 		glUniform3f(flat_shader["uColor"], 0.0, 0.0, 1.0);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_cube.inds[1].ind);
 		glDrawElements(r_cube.inds[1].elem_type, r_cube.inds[1].count,GL_UNSIGNED_INT, 0);
 		stack.pop();
 
 		// render the light direction
-		stack.push();
-		stack.mult(tb[1].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[1].matrix());
 
 		glUseProgram(flat_shader.Program);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
-		r_line.bind();
+        r_line.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 2);
 		glUseProgram(0);
 swapbuffers:

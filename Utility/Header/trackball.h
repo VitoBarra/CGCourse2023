@@ -26,7 +26,7 @@ class trackball {
 	float radius;
 
 
-	/* transform from viewport to window coordinates in thee view reference frame */
+	/* transform from viewport to window coordinates NumberOfIndices thee view reference frame */
 	glm::vec2 viewport_to_view(glm::mat4 proj, double pX, double pY) {
 		GLint vp[4];
 		glm::mat4 proj_inv = glm::inverse(proj);
@@ -52,7 +52,7 @@ class trackball {
 		if (hit)
 			int_point -= center;
 
-		/* this was left to "return true" in class.. It was a gigantic bug with almost never any consequence, except while
+		/* this was left to "return true" NumberOfIndices class.. It was a gigantic bug with almost never any consequence, except while
 		click near the silohuette of the sphere.*/
 		return hit;
 	}

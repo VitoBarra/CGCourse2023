@@ -82,7 +82,7 @@ bool cursor_sphere_intersection(glm::vec3 & int_point, double xpos, double ypos)
 	if (hit)
 		int_point -= c;
 
-	/* this was left to "return true" in class.. It was a gigantic bug with almost never any consequence, except while 
+	/* this was left to "return true" NumberOfIndices class.. It was a gigantic bug with almost never any consequence, except while
 	click near the silohuette of the sphere.*/
 	return hit;
 }
@@ -182,7 +182,7 @@ int lez6_1(void)
 
 	/* load the shaders */
 	Shader basic_shader;
-	basic_shader.create_program("shaders/lez2.vert", "shaders/lez2.frag");
+	basic_shader.create_program("shaders/PositionSinFun.vert", "shaders/JustColor.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");
@@ -239,43 +239,43 @@ int lez6_1(void)
 		glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view[0][0]);
         CheckGLErrors(__LINE__, __FILE__);
 
-		stack.push();
-		stack.mult(scaling_matrix*trackball_matrix);
+        stack.pushLastElement();
+        stack.multiply(scaling_matrix * trackball_matrix);
 
-		r_cube.bind();
-		stack.push();
-		stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 1.0, 0.2)));
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        r_cube.SetAsCurrentObjectToRender();
+        stack.pushLastElement();
+        stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 1.0, 0.2)));
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 0.0, 1.0, 0.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		stack.push();
-		stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(1, 0.2, 0.2)));
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        stack.pushLastElement();
+        stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(1, 0.2, 0.2)));
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 1.0, 0.0, 0.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		stack.push();
-		stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.2f, 0.2f, 1.f)));
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        stack.pushLastElement();
+        stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.2f, 0.2f, 1.f)));
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 0.0, 0.0, 1.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		r_sphere.bind();
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        r_sphere.SetAsCurrentObjectToRender();
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 1.0, 1.0, 1.0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.inds[0].ind);
-		glDrawElements(GL_LINES, r_sphere.in*2, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_LINES, r_sphere.NumberOfIndices * 2, GL_UNSIGNED_INT, 0);
 
 
   		glEnable(GL_POLYGON_OFFSET_FILL);
   		glPolygonOffset(1.0, 1.0);
 		glUniform3f(basic_shader["uColor"], 0.8f, 0.8f, 0.8f);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.ind);
-		glDrawElements(GL_TRIANGLES, r_sphere.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_sphere.NumberOfIndices, GL_UNSIGNED_INT, 0);
   		glDisable(GL_POLYGON_OFFSET_FILL);
 
 
@@ -283,9 +283,9 @@ int lez6_1(void)
 
 		stack.pop();
 
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], -1.0, 0.0, 1.0);
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 
         CheckGLErrors(__LINE__, __FILE__);

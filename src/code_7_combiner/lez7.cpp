@@ -39,13 +39,13 @@ glm::mat4 trackball_matrix;
 glm::mat4  scaling_matrix;
 float scaling_factor;
 
-/* object that will be rendered in this scene*/
+/* object that will be rendered NumberOfIndices this scene*/
 Renderable r_cube,r_sphere,r_frame, r_plane;
 
 /* Program shaders used */
 Shader basic_shader,flat_shader;
 
-/* transform from viewpoert to window coordinates in thee view reference frame */
+/* transform from viewpoert to window coordinates NumberOfIndices thee view reference frame */
 glm::vec2 viewport_to_view(double pX, double pY) {
 	glm::vec2 res;
 	res.x = -1.f + ((float)pX / 1000) * (1.f - (-1.f));
@@ -91,7 +91,7 @@ bool cursor_sphere_intersection(glm::vec3 & int_point, double xpos, double ypos)
 	if (hit)
 		int_point -= c;
 
-	/* this was left to "return true" in class.. It was a gigantic bug with almost never any consequence, except while 
+	/* this was left to "return true" NumberOfIndices class.. It was a gigantic bug with almost never any consequence, except while
 	click near the silohuette of the sphere.*/
 	return hit;
 }
@@ -182,7 +182,7 @@ int lez7(void)
 	printout_opengl_glsl_info();
 
 	/* load the shaders */
-	basic_shader.create_program("shaders/lez2.vert", "shaders/lez2.frag");
+	basic_shader.create_program("shaders/PositionSinFun.vert", "shaders/JustColor.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");
@@ -191,7 +191,7 @@ int lez7(void)
 	check_shader(basic_shader.FragmentShader);
 	validate_shader_program(basic_shader.Program);
 
-	flat_shader.create_program("shaders/lez2.vert", "shaders/flat.frag");
+	flat_shader.create_program("shaders/PositionSinFun.vert", "shaders/lez7flat.frag");
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -264,12 +264,12 @@ int lez7(void)
 	//	goto fin;
         CheckGLErrors(__LINE__, __FILE__);
 
-		stack.push();
-		stack.mult(scaling_matrix *trackball_matrix);
+        stack.pushLastElement();
+        stack.multiply(scaling_matrix * trackball_matrix);
 
 
-		/* show a white contour with stenciling */	
-		r_cube.bind();
+		/* show a white contour with stenciling */
+        r_cube.SetAsCurrentObjectToRender();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_cube.ind);
 
 		// enable the stencil test
@@ -282,16 +282,16 @@ int lez7(void)
 		glStencilFunc(GL_ALWAYS, 1, 0xFF);
 
 		// all th fragments that pass both stencil and depth test write 1 on the stencil buffer (1 is the reference value passed
-		// in the glStencilFunc call
+		// NumberOfIndices the glStencilFunc call
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 		glUseProgram(basic_shader.Program);
 		for (int i = 0; i < 4; ++i) {
-			stack.push();
-			stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.35 * i, 0.15 * i, -0.4 * i)));
-			glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+            stack.pushLastElement();
+            stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.35 * i, 0.15 * i, -0.4 * i)));
+			glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 			glUniform3f(basic_shader["uColor"], 1.0, 0.0, 0.0);
-			glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 			stack.pop();
 		}
 		glUseProgram(0);
@@ -315,12 +315,12 @@ int lez7(void)
 		glUniform4f(flat_shader["uColor"], 1.f, 1.f, 1.f,1.f);
 
 		for (int i = 0; i < 4; ++i) {
-			stack.push();
-			stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.35 * i, 0.15 * i, -0.4 * i)));
-			stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(1.05, 1.05, 1.05)));
+            stack.pushLastElement();
+            stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.35 * i, 0.15 * i, -0.4 * i)));
+            stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(1.05, 1.05, 1.05)));
 
-			glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-			glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+			glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+			glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 			stack.pop();
 		}
 		 
@@ -336,13 +336,13 @@ int lez7(void)
 		/*  End contour with stencil	
 		*/
 
-		/* show the spher in flat-wire (filled triangles plus triangle contours) */
+		/* show the spher NumberOfIndices flat-wire (filled triangles plus triangle contours) */
 		// step 1: render the shere normally
 		glUseProgram(flat_shader.Program);
-		r_sphere.bind();
-		stack.push();
-		stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.0, 1.f)));
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        r_sphere.SetAsCurrentObjectToRender();
+        stack.pushLastElement();
+        stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.0, 1.f)));
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform4f(basic_shader["uColor"], 1.0, 1.0, 1.0,1.0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.inds[1].ind);
 		glDrawElements(GL_LINES, r_sphere.inds[1].count, GL_UNSIGNED_INT, 0);
@@ -356,10 +356,10 @@ int lez7(void)
 		// set offset function 
 		glPolygonOffset(1.0, 1.0);
 
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 0.8, 0.8, 0.8);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.ind);
-		glDrawElements(GL_TRIANGLES, r_sphere.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_sphere.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		
 		// disable polygon offset
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -375,15 +375,15 @@ int lez7(void)
         CheckGLErrors(__LINE__, __FILE__);
 
 		glUseProgram(flat_shader.Program);
-		r_plane.bind();
-		stack.mult(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.0, 2.0)));
-		stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(3.0, 3.0, 3.0)));
-		stack.mult(glm::rotate(glm::mat4(1.f),glm::radians(-90.f), glm::vec3(1.0, 0.0, 0.0)));
+        r_plane.SetAsCurrentObjectToRender();
+        stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.0, 2.0)));
+        stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(3.0, 3.0, 3.0)));
+        stack.multiply(glm::rotate(glm::mat4(1.f), glm::radians(-90.f), glm::vec3(1.0, 0.0, 0.0)));
         CheckGLErrors(__LINE__, __FILE__);
 
 		glUniform4f(flat_shader["uColor"], 0.0, 0.5, 0.0,0.5);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-		glDrawElements(GL_TRIANGLES, r_plane.in, GL_UNSIGNED_INT, 0);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+		glDrawElements(GL_TRIANGLES, r_plane.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		glUseProgram(0);
 
 		// disable blending
@@ -396,9 +396,9 @@ int lez7(void)
 		stack.pop();
 
 		glUseProgram(basic_shader.Program);
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], -1.0, 0.0, 1.0);
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 

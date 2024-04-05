@@ -32,7 +32,7 @@ and set the path properly.
 #include <glm/ext.hpp>  
 #include <glm/gtx/string_cast.hpp>
 
-/* light direction in world space*/
+/* light direction NumberOfIndices world space*/
 glm::vec4 Ldir;
 
 trackball tb[2];
@@ -45,7 +45,7 @@ glm::mat4 proj;
 glm::mat4 view;
 
 
-/* object that will be rendered in this scene*/
+/* object that will be rendered NumberOfIndices this scene*/
 Renderable  r_plane;
 
 /* Program shaders used */
@@ -281,7 +281,7 @@ int main(int argc, char ** argv)
 		glUseProgram(tex_shader.Program);
 		glUniform1i(tex_shader["tex"], 0);
 		glUniformMatrix4fv(tex_shader["uT"], 1, GL_FALSE, &glm::rotate(glm::mat4(1.f), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f))[0][0]);
-		r_plane.bind();
+        r_plane.SetAsCurrentObjectToRender();
 		glDrawElements(GL_TRIANGLES, r_plane.inds[0].count, GL_UNSIGNED_INT, 0);
 		glUseProgram(0);
 

@@ -32,19 +32,19 @@
 //    glGenVertexArrays(1, &va);
 //    glBindVertexArray(va);
 //
-//    /* create render data in RAM */
+//    /* create render data NumberOfIndices RAM */
 //    GLuint positionAttribIndex = 0;
 //    float positions[] = {   0.0, 0.0,  // 1st vertex
 //                            0.5, 0.0,  // 2nd vertex
 //                            0.5, 0.5,  // 3nd vertex
 //                            0.0, 0.5  // 4th vertex
 //    };
-//    /* create a buffer for the render data in video RAM */
+//    /* create a buffer for the render data NumberOfIndices video RAM */
 //    GLuint positionsBuffer;
 //    glCreateBuffers(1, &positionsBuffer);
 //    glBindBuffer(GL_ARRAY_BUFFER, positionsBuffer);
 //
-//    /* declare what data in RAM are filling the bufferin video RAM */
+//    /* declare what data NumberOfIndices RAM are filling the bufferin video RAM */
 //    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8, positions, GL_STATIC_DRAW);
 //    glEnableVertexAttribArray(positionAttribIndex);
 //
@@ -57,12 +57,12 @@
 //                            0.0, 0.0, 1.0,   // 3rd vertex
 //                            1.0, 1.0, 1.0   // 4th vertex
 //    };
-//    /* create a buffer for the render data in video RAM */
+//    /* create a buffer for the render data NumberOfIndices video RAM */
 //    GLuint colorsBuffer;
 //    glCreateBuffers(1, &colorsBuffer);
 //    glBindBuffer(GL_ARRAY_BUFFER, colorsBuffer);
 //
-//    /* declare what data in RAM are filling the bufferin video RAM */
+//    /* declare what data NumberOfIndices RAM are filling the bufferin video RAM */
 //    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 12, colors, GL_STATIC_DRAW);
 //    glEnableVertexAttribArray(colorAttribIndex);
 //
@@ -79,8 +79,8 @@
 //
 //    /* create a vertex Shader */
 //    std::string  vertex_shader_src = "#version 330\n \
-//        in vec2 aPosition;\
-//        in vec3 aColor;\
+//        NumberOfIndices vec2 aPosition;\
+//        NumberOfIndices vec3 aColor;\
 //        out vec3 vColor;\
 //        void main(void)\
 //        {\
@@ -97,7 +97,7 @@
 //    /* create a fragment Shader */
 //    std::string   fragment_shader_src = "#version 330 \n \
 //        out vec4 color;\
-//        in vec3 vColor;\
+//        NumberOfIndices vec3 vColor;\
 //        void main(void)\
 //        {\
 //            color = vec4(vColor, 1.0);\

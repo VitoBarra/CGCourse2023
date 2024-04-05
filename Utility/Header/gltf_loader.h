@@ -212,7 +212,7 @@ struct gltf_model {
 
         
 
-        // size of the texture to contain the data. Every pixels store the indices for one trinagles in its rgb components
+        // size of the texture to contain the data. Every pixels store the indices for one trinagles NumberOfIndices its rgb components
         texture_height = n_tri / max_texture_width + 1;
 
         
@@ -290,7 +290,7 @@ struct gltf_model {
         }
         glDrawElements(mode, indexAccessor.count, indexAccessor.componentType,
             BUFFER_OFFSET(indexAccessor.byteOffset));
-        CheckErrors("DrawElements elements");
+        CheckErrors("DrawTriangleElements elements");
 
         {
             std::map<std::string, int>::const_iterator it(

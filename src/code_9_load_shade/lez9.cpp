@@ -27,7 +27,7 @@ and set the path properly.
 #include <glm/ext.hpp>  
 #include <glm/gtx/string_cast.hpp>
 
-/* light direction in world space*/
+/* light direction NumberOfIndices world space*/
 glm::vec4 Ldir;
 
 trackball tb[2];
@@ -40,7 +40,7 @@ glm::mat4 proj;
 glm::mat4 view ;
 
 
-/* object that will be rendered in this scene*/
+/* object that will be rendered NumberOfIndices this scene*/
 Renderable r_cube,r_sphere,r_frame, r_plane,r_line;
 
 /* Program shaders used */
@@ -127,7 +127,7 @@ int lez9(void)
 
 	/* load the shaders */
 	std::string shaders_path = "../../src/code_9_load_shade/shaders/";
-	diffuse_shader.create_program((shaders_path+"lez2.vert").c_str(), (shaders_path+"lez2.frag").c_str());
+	diffuse_shader.create_program((shaders_path+"PositionSinFun.vert").c_str(), (shaders_path+"JustColor.frag").c_str());
     diffuse_shader.RegisterUniformVariable("uP");
     diffuse_shader.RegisterUniformVariable("uV");
     diffuse_shader.RegisterUniformVariable("uT");
@@ -137,7 +137,7 @@ int lez9(void)
 	check_shader(diffuse_shader.FragmentShader);
 	validate_shader_program(diffuse_shader.Program);
 
-	flat_shader.create_program((shaders_path + "lez2.vert").c_str(), (shaders_path + "flat.frag").c_str());
+	flat_shader.create_program((shaders_path + "PositionSinFun.vert").c_str(), (shaders_path + "flat.frag").c_str());
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -236,15 +236,15 @@ int lez9(void)
 		/* light direction transformed by the trackball tb[1]*/
 		glm::vec4 curr_Ldir = tb[1].matrix()*Ldir;
 
-		stack.push();
-		stack.mult(tb[0].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[0].matrix());
 
-		/* show the plane in flat-wire (filled triangles plus triangle contours) */
+		/* show the plane NumberOfIndices flat-wire (filled triangles plus triangle contours) */
 		// step 1: render the edges 
 		glUseProgram(flat_shader.Program);
-		r_plane.bind();
-		stack.push();
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        r_plane.SetAsCurrentObjectToRender();
+        stack.pushLastElement();
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0,1.0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.inds[1].ind);
 		glDrawElements(GL_LINES, r_plane.inds[1].count, GL_UNSIGNED_INT, 0);
@@ -258,11 +258,11 @@ int lez9(void)
 		// set offset function 
 		glPolygonOffset(1.0, 1.0);
 
-		glUniformMatrix4fv(diffuse_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(diffuse_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		
 		glUniform3f(diffuse_shader["uDiffuseColor"], 0.8f,0.8f,0.8f);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.ind);
-		glDrawElements(GL_TRIANGLES, r_plane.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_plane.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		
 		// disable polygon offset
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -271,20 +271,20 @@ int lez9(void)
 		
 		// render the reference frame
 		glUseProgram(diffuse_shader.Program);
-		glUniformMatrix4fv(diffuse_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(diffuse_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		// a negative x component is used to tell the Shader to use the vertex color as is (that is, no lighting is computed)
-		glUniform3f(diffuse_shader["uDiffuseColor"], -1.0, 0.0, 1.0); 
-		r_frame.bind();
+		glUniform3f(diffuse_shader["uDiffuseColor"], -1.0, 0.0, 1.0);
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
 		glUseProgram(diffuse_shader.Program);
 		glUniform4fv(diffuse_shader["uLdir"],1,&curr_Ldir[0]);
 		
-		// uncomment to DrawElements the sphere
+		// uncomment to DrawTriangleElements the sphere
 		//r_sphere.RegisterUniformVariable();
-		//stack.push();
-		//stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.3, 0.3, 0.3)));
+		//stack.pushLastElement();
+		//stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.3, 0.3, 0.3)));
 		//glDrawElements(r_sphere.inds[0].elem_type, r_sphere.inds[0].count, GL_UNSIGNED_INT, 0);
 		//stack.pop();
 
@@ -292,17 +292,17 @@ int lez9(void)
 		The object is made of several meshes (== objbects of type "Renderable")
 		*/
 		if (!r_cb.empty()) {
-			stack.push();
+            stack.pushLastElement();
 
 			/*scale the object using the diagonal of the bounding box of the vertices position.
 			This operation guarantees that the drawing will be inside the unit cube.*/
 			float diag = r_cb[0].bbox.diagonal();
-			stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(1.f / diag, 1.f / diag, 1.f / diag)));
+            stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(1.f / diag, 1.f / diag, 1.f / diag)));
 
-			glUniformMatrix4fv(diffuse_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+			glUniformMatrix4fv(diffuse_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 
 			for (unsigned int is = 0; is < r_cb.size(); is++) {
-				r_cb[is].bind();
+                r_cb[is].SetAsCurrentObjectToRender();
 				/* every Renderable object has its own material. Here just the diffuse color is used.
 				ADD HERE CODE TO PASS OTHE MATERIAL PARAMETERS.
 				*/
@@ -315,13 +315,13 @@ int lez9(void)
 		}
 		
 		stack.pop();
-		 
-		r_line.bind();
+
+        r_line.SetAsCurrentObjectToRender();
 		glUseProgram(flat_shader.Program);
-		stack.push();
-		stack.mult(tb[1].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[1].matrix());
 		 
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		 
 		glUniform4f(flat_shader["uColor"], 1.0,1.0,1.0,1.0);
 		 

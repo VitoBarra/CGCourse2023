@@ -50,7 +50,7 @@ int lez6_2(void)
     printout_opengl_glsl_info();
 
 	Shader basic_shader;
-    basic_shader.create_program("shaders/lez2.vert", "shaders/lez2.frag");
+    basic_shader.create_program("shaders/PositionSinFun.vert", "shaders/JustColor.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");
@@ -154,57 +154,57 @@ int lez6_2(void)
 		
 
 		/* render box and cylinders so that the look like a car */
-		r_cube.bind();
+        r_cube.SetAsCurrentObjectToRender();
 
-		stack.load_identity(); 
-		stack.push();
+		stack.load_identity();
+        stack.pushLastElement();
 
-		stack.mult(R);
-		stack.push();
+        stack.multiply(R);
+        stack.pushLastElement();
 
-		stack.mult(raise_up);
+        stack.multiply(raise_up);
 
-		stack.push();
-		stack.mult(cube_to_car_body);
-		/*DrawElements the cube tranformed into the car's body*/
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        stack.pushLastElement();
+        stack.multiply(cube_to_car_body);
+		/*DrawTriangleElements the cube tranformed into the car's body*/
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 1.0,0.0,0.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		stack.push();
-		stack.mult(cube_to_spoiler);
-		/*DrawElements the cube tranformed into the car's roof/spoiler */
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        stack.pushLastElement();
+        stack.multiply(cube_to_spoiler);
+		/*DrawTriangleElements the cube tranformed into the car's roof/spoiler */
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 1.0, 1.0, 0.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		/*DrawElements the wheels */
-		r_cyl.bind();
+		/*DrawTriangleElements the wheels */
+        r_cyl.SetAsCurrentObjectToRender();
 		glUniform3f(basic_shader["uColor"], 0.0, 0.0, 1.0);
 		for (int iw = 0; iw < 4; ++iw) {
-			stack.push();
-			stack.mult(wheels[iw]);
-			glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-			glDrawElements(GL_TRIANGLES, r_cyl.in, GL_UNSIGNED_INT, 0);
+            stack.pushLastElement();
+            stack.multiply(wheels[iw]);
+			glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+			glDrawElements(GL_TRIANGLES, r_cyl.NumberOfIndices, GL_UNSIGNED_INT, 0);
 			stack.pop();
 		}
 
 		stack.pop();
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 
-		r_plane.bind();
+        r_plane.SetAsCurrentObjectToRender();
 		glUniform3f(basic_shader["uColor"], 0.2, 0.5, 0.2);
 		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &s_plane[0][0]);
-		glDrawElements(GL_TRIANGLES, r_plane.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_plane.NumberOfIndices, GL_UNSIGNED_INT, 0);
 
 		/* ******************************************************/
 
 		stack.pop();
 
 		glUniform3f(basic_shader["uColor"], -1.0, 0.0, 1.0);
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 
         CheckGLErrors(__LINE__, __FILE__);

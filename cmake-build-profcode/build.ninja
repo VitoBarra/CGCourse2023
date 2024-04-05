@@ -49,17 +49,41 @@ cmake_ninja_workdir = F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/Compute
 
 build cmake_object_order_depends_target_CGProject: phony || cmake_object_order_depends_target_ProfCode
 
-build CMakeFiles/CGProject.dir/CGProject/CGProject.cpp.obj: CXX_COMPILER__CGProject_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/CGProject/CGProject.cpp || cmake_object_order_depends_target_CGProject
+build CMakeFiles/CGProject.dir/CGProject/00CGProject.cpp.obj: CXX_COMPILER__CGProject_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/CGProject/00CGProject.cpp || cmake_object_order_depends_target_CGProject
   DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
-  DEP_FILE = CMakeFiles\CGProject.dir\CGProject\CGProject.cpp.obj.d
+  DEP_FILE = CMakeFiles\CGProject.dir\CGProject\00CGProject.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
   OBJECT_DIR = CMakeFiles\CGProject.dir
   OBJECT_FILE_DIR = CMakeFiles\CGProject.dir\CGProject
 
-build CMakeFiles/CGProject.dir/CGProject/MyFirstTriangle.cpp.obj: CXX_COMPILER__CGProject_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/CGProject/MyFirstTriangle.cpp || cmake_object_order_depends_target_CGProject
+build CMakeFiles/CGProject.dir/CGProject/01MyFirstTriangle.cpp.obj: CXX_COMPILER__CGProject_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/CGProject/01MyFirstTriangle.cpp || cmake_object_order_depends_target_CGProject
   DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
-  DEP_FILE = CMakeFiles\CGProject.dir\CGProject\MyFirstTriangle.cpp.obj.d
+  DEP_FILE = CMakeFiles\CGProject.dir\CGProject\01MyFirstTriangle.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
+  OBJECT_DIR = CMakeFiles\CGProject.dir
+  OBJECT_FILE_DIR = CMakeFiles\CGProject.dir\CGProject
+
+build CMakeFiles/CGProject.dir/CGProject/02WrappedTriangles.cpp.obj: CXX_COMPILER__CGProject_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/CGProject/02WrappedTriangles.cpp || cmake_object_order_depends_target_CGProject
+  DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
+  DEP_FILE = CMakeFiles\CGProject.dir\CGProject\02WrappedTriangles.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
+  OBJECT_DIR = CMakeFiles\CGProject.dir
+  OBJECT_FILE_DIR = CMakeFiles\CGProject.dir\CGProject
+
+build CMakeFiles/CGProject.dir/CGProject/03FunnyShape.cpp.obj: CXX_COMPILER__CGProject_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/CGProject/03FunnyShape.cpp || cmake_object_order_depends_target_CGProject
+  DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
+  DEP_FILE = CMakeFiles\CGProject.dir\CGProject\03FunnyShape.cpp.obj.d
+  FLAGS = -g -fdiagnostics-color=always
+  INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
+  OBJECT_DIR = CMakeFiles\CGProject.dir
+  OBJECT_FILE_DIR = CMakeFiles\CGProject.dir\CGProject
+
+build CMakeFiles/CGProject.dir/CGProject/04MyCar.cpp.obj: CXX_COMPILER__CGProject_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/CGProject/04MyCar.cpp || cmake_object_order_depends_target_CGProject
+  DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
+  DEP_FILE = CMakeFiles\CGProject.dir\CGProject\04MyCar.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
   OBJECT_DIR = CMakeFiles\CGProject.dir
@@ -73,7 +97,7 @@ build CMakeFiles/CGProject.dir/CGProject/MyFirstTriangle.cpp.obj: CXX_COMPILER__
 #############################################
 # Link the executable CGProject.exe
 
-build CGProject.exe: CXX_EXECUTABLE_LINKER__CGProject_Debug CMakeFiles/CGProject.dir/CGProject/CGProject.cpp.obj CMakeFiles/CGProject.dir/CGProject/MyFirstTriangle.cpp.obj | vcpkg_installed/x64-windows/debug/lib/imguid.lib libProfCode.a vcpkg_installed/x64-windows/debug/lib/glew32d.lib vcpkg_installed/x64-windows/debug/lib/imguid.lib vcpkg_installed/x64-windows/debug/lib/glfw3dll.lib || libProfCode.a
+build CGProject.exe: CXX_EXECUTABLE_LINKER__CGProject_Debug CMakeFiles/CGProject.dir/CGProject/00CGProject.cpp.obj CMakeFiles/CGProject.dir/CGProject/01MyFirstTriangle.cpp.obj CMakeFiles/CGProject.dir/CGProject/02WrappedTriangles.cpp.obj CMakeFiles/CGProject.dir/CGProject/03FunnyShape.cpp.obj CMakeFiles/CGProject.dir/CGProject/04MyCar.cpp.obj | vcpkg_installed/x64-windows/debug/lib/imguid.lib libProfCode.a vcpkg_installed/x64-windows/debug/lib/glew32d.lib vcpkg_installed/x64-windows/debug/lib/imguid.lib vcpkg_installed/x64-windows/debug/lib/glfw3dll.lib || libProfCode.a
   FLAGS = -g
   LINK_LIBRARIES = vcpkg_installed/x64-windows/debug/lib/imguid.lib  -lopengl32  libProfCode.a  vcpkg_installed/x64-windows/debug/lib/glew32d.lib  -lopengl32  -lglu32  vcpkg_installed/x64-windows/debug/lib/imguid.lib  vcpkg_installed/x64-windows/debug/lib/glfw3dll.lib  -lopengl32  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\CGProject.dir
@@ -204,25 +228,9 @@ build CMakeFiles/ProfCode.dir/src/code_4_my_first_car/lez4.cpp.obj: CXX_COMPILER
   OBJECT_DIR = CMakeFiles\ProfCode.dir
   OBJECT_FILE_DIR = CMakeFiles\ProfCode.dir\src\code_4_my_first_car
 
-build CMakeFiles/ProfCode.dir/src/code_4_my_first_car/lez4_car.cpp.obj: CXX_COMPILER__ProfCode_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/src/code_4_my_first_car/lez4_car.cpp || cmake_object_order_depends_target_ProfCode
-  DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
-  DEP_FILE = CMakeFiles\ProfCode.dir\src\code_4_my_first_car\lez4_car.cpp.obj.d
-  FLAGS = -g -fdiagnostics-color=always
-  INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
-  OBJECT_DIR = CMakeFiles\ProfCode.dir
-  OBJECT_FILE_DIR = CMakeFiles\ProfCode.dir\src\code_4_my_first_car
-
 build CMakeFiles/ProfCode.dir/src/code_5_matrix_stack/lez5.cpp.obj: CXX_COMPILER__ProfCode_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/src/code_5_matrix_stack/lez5.cpp || cmake_object_order_depends_target_ProfCode
   DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
   DEP_FILE = CMakeFiles\ProfCode.dir\src\code_5_matrix_stack\lez5.cpp.obj.d
-  FLAGS = -g -fdiagnostics-color=always
-  INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
-  OBJECT_DIR = CMakeFiles\ProfCode.dir
-  OBJECT_FILE_DIR = CMakeFiles\ProfCode.dir\src\code_5_matrix_stack
-
-build CMakeFiles/ProfCode.dir/src/code_5_matrix_stack/lez5_stack.cpp.obj: CXX_COMPILER__ProfCode_unscanned_Debug F$:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/src/code_5_matrix_stack/lez5_stack.cpp || cmake_object_order_depends_target_ProfCode
-  DEFINES = -DCOMPILE_PROF_CODE -DGLFW_DLL
-  DEP_FILE = CMakeFiles\ProfCode.dir\src\code_5_matrix_stack\lez5_stack.cpp.obj.d
   FLAGS = -g -fdiagnostics-color=always
   INCLUDES = -IF:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/Utility/Header -isystem F:/User/Documenti/Projects/Git/VitoBarra/UNI-Code/ComputerGrafica/cmake-build-profcode/vcpkg_installed/x64-windows/include
   OBJECT_DIR = CMakeFiles\ProfCode.dir
@@ -292,7 +300,7 @@ build CMakeFiles/ProfCode.dir/src/code_xx_compute_shader/lez15.cpp.obj: CXX_COMP
 #############################################
 # Link the static library libProfCode.a
 
-build libProfCode.a: CXX_STATIC_LIBRARY_LINKER__ProfCode_Debug CMakeFiles/ProfCode.dir/src/code_0_setup/lez0.cpp.obj CMakeFiles/ProfCode.dir/src/code_10_shading_imgui/lez10.cpp.obj CMakeFiles/ProfCode.dir/src/code_11_texture_bump_mapping/lez11.cpp.obj CMakeFiles/ProfCode.dir/src/code_11_texture_bump_mapping/lez11_boot.cpp.obj CMakeFiles/ProfCode.dir/src/code_12_onthefly_coordinates/lez12.cpp.obj CMakeFiles/ProfCode.dir/src/code_13_shadows/lez13.cpp.obj CMakeFiles/ProfCode.dir/src/code_14_ambient_obscurance/lez14.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/ghost_main.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/lez1.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/main.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/main_interleaved_array.cpp.obj CMakeFiles/ProfCode.dir/src/code_2_wrapping/lez2.cpp.obj CMakeFiles/ProfCode.dir/src/code_3_box2d/lez3_create_box2d.cpp.obj CMakeFiles/ProfCode.dir/src/code_4_my_first_car/lez4.cpp.obj CMakeFiles/ProfCode.dir/src/code_4_my_first_car/lez4_car.cpp.obj CMakeFiles/ProfCode.dir/src/code_5_matrix_stack/lez5.cpp.obj CMakeFiles/ProfCode.dir/src/code_5_matrix_stack/lez5_stack.cpp.obj CMakeFiles/ProfCode.dir/src/code_6_trackball/Lez6.cpp.obj CMakeFiles/ProfCode.dir/src/code_6_trackball/lez6_stack.cpp.obj CMakeFiles/ProfCode.dir/src/code_6_trackball/lez6_trackball.cpp.obj CMakeFiles/ProfCode.dir/src/code_7_combiner/lez7.cpp.obj CMakeFiles/ProfCode.dir/src/code_8_picking/lez8.cpp.obj CMakeFiles/ProfCode.dir/src/code_9_load_shade/lez9.cpp.obj CMakeFiles/ProfCode.dir/src/code_xx_compute_shader/lez15.cpp.obj
+build libProfCode.a: CXX_STATIC_LIBRARY_LINKER__ProfCode_Debug CMakeFiles/ProfCode.dir/src/code_0_setup/lez0.cpp.obj CMakeFiles/ProfCode.dir/src/code_10_shading_imgui/lez10.cpp.obj CMakeFiles/ProfCode.dir/src/code_11_texture_bump_mapping/lez11.cpp.obj CMakeFiles/ProfCode.dir/src/code_11_texture_bump_mapping/lez11_boot.cpp.obj CMakeFiles/ProfCode.dir/src/code_12_onthefly_coordinates/lez12.cpp.obj CMakeFiles/ProfCode.dir/src/code_13_shadows/lez13.cpp.obj CMakeFiles/ProfCode.dir/src/code_14_ambient_obscurance/lez14.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/ghost_main.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/lez1.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/main.cpp.obj CMakeFiles/ProfCode.dir/src/code_1_my_first_triangle/main_interleaved_array.cpp.obj CMakeFiles/ProfCode.dir/src/code_2_wrapping/lez2.cpp.obj CMakeFiles/ProfCode.dir/src/code_3_box2d/lez3_create_box2d.cpp.obj CMakeFiles/ProfCode.dir/src/code_4_my_first_car/lez4.cpp.obj CMakeFiles/ProfCode.dir/src/code_5_matrix_stack/lez5.cpp.obj CMakeFiles/ProfCode.dir/src/code_6_trackball/Lez6.cpp.obj CMakeFiles/ProfCode.dir/src/code_6_trackball/lez6_stack.cpp.obj CMakeFiles/ProfCode.dir/src/code_6_trackball/lez6_trackball.cpp.obj CMakeFiles/ProfCode.dir/src/code_7_combiner/lez7.cpp.obj CMakeFiles/ProfCode.dir/src/code_8_picking/lez8.cpp.obj CMakeFiles/ProfCode.dir/src/code_9_load_shade/lez9.cpp.obj CMakeFiles/ProfCode.dir/src/code_xx_compute_shader/lez15.cpp.obj
   LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = CMakeFiles\ProfCode.dir
   POST_BUILD = cd .

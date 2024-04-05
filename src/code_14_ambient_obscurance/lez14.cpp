@@ -33,7 +33,7 @@ and set the path properly.
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_access.hpp>
 
-/* light direction in world space*/
+/* light direction NumberOfIndices world space*/
 glm::vec4 Ldir;
 
 /* projector */
@@ -61,7 +61,7 @@ matrix_stack stack;
 /* a frame buffer object for the offline rendering*/
 frame_buffer_object fbo, fbo_ao,fbo_blur;
 
-/* object that will be rendered in this scene*/
+/* object that will be rendered NumberOfIndices this scene*/
 Renderable r_frame,r_quad,r_line;
 std::vector<Renderable> r_knife;
 
@@ -177,13 +177,13 @@ void gui_setup() {
 
 
 void draw_scene(Shader & sh) {
- 	stack.push();
+    stack.pushLastElement();
 	float sf = 1.f / r_knife[0].bbox.diagonal();
 	glm::vec3 c = r_knife[0].bbox.center();
-	stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(sf, sf, sf)));
-	stack.mult(glm::translate(glm::mat4(1.f), -c));
-	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.m()[0][0]);
-	r_knife[0].bind();
+    stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(sf, sf, sf)));
+    stack.multiply(glm::translate(glm::mat4(1.f), -c));
+	glUniformMatrix4fv(sh["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
+    r_knife[0].SetAsCurrentObjectToRender();
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_knife[0].inds[0].ind);
 	glDrawElements(r_knife[0].inds[0].elem_type, r_knife[0].inds[0].count, GL_UNSIGNED_INT, 0);
 	stack.pop(); 
@@ -191,7 +191,7 @@ void draw_scene(Shader & sh) {
 }
 
 void draw_full_screen_quad() {
-	r_quad.bind();
+    r_quad.SetAsCurrentObjectToRender();
 	glDrawElements(GL_TRIANGLES, 6,GL_UNSIGNED_INT, 0);
 }
 
@@ -332,7 +332,7 @@ int lez14(void)
 	final_shader.create_program((shaders_path + "fsq.vert").c_str(), (shaders_path + "final.frag").c_str());
 
 	fsq_shader.create_program((shaders_path + "fsq.vert").c_str(), (shaders_path + "fsq.frag").c_str());
-	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "flat.frag").c_str());
+	flat_shader.create_program((shaders_path + "flat.vert").c_str(), (shaders_path + "lez7flat.frag").c_str());
 	blur_shader.create_program((shaders_path + "fsq.vert").c_str(), (shaders_path + "blur.frag").c_str());
 
 	/* create a  long line*/
@@ -428,8 +428,8 @@ int lez14(void)
 		/* light direction transformed by the trackball tb[1]*/
 		glm::vec4 curr_Ldir = tb[1].matrix()*Ldir;
 
-		stack.push();
-		stack.mult(tb[0].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[0].matrix());
 
   	 	glBindFramebuffer(GL_FRAMEBUFFER, fbo.id_fbo);
 
@@ -445,7 +445,7 @@ int lez14(void)
 
 		glUseProgram(g_buffer_shader.Program);
 		glUniformMatrix4fv(g_buffer_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
-		glUniformMatrix4fv(g_buffer_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(g_buffer_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 
 		draw_scene(g_buffer_shader);
         CheckGLErrors(__LINE__, __FILE__, true);
@@ -498,10 +498,10 @@ int lez14(void)
 		// render the reference frame
 		glUseProgram(flat_shader.Program);
 		glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &curr_view[0][0]);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], -1.0, 1.0, 1.0);
 
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 		glUseProgram(0);
 
@@ -509,13 +509,13 @@ int lez14(void)
 		stack.pop();
 
 		// render the light direction
-		stack.push();
-		stack.mult(tb[1].matrix());
+        stack.pushLastElement();
+        stack.multiply(tb[1].matrix());
 
 		glUseProgram(flat_shader.Program);
-		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
-		r_line.bind();
+        r_line.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 2);
 		glUseProgram(0);
 swapbuffers:

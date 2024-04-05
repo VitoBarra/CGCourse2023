@@ -87,7 +87,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 
 	//std::cout <<"drag?  "<< is_trackball_dragged<< std::endl;
 	/* here the code to create the rotation to apply before rendering the scene.
-	1. build the ray from (0,0,0) in view space going through the window into the scene */
+	1. build the ray from (0,0,0) NumberOfIndices view space going through the window into the scene */
 	glm::vec3 p1;
 	if (is_trackball_dragged) {
 		bool intersected = test_intersection_sphere(p1, xpos, ypos);
@@ -104,14 +104,14 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 		}
 	}
 
-	/* 2. check if the ray intersect the sphere centered in (0,0,0), in world space.
+	/* 2. check if the ray intersect the sphere centered NumberOfIndices (0,0,0), NumberOfIndices world space.
 	   Try different values for the sphere radius. radius = 2 will be fine.
-	   You also need to store the previous intersection (found in the previous invocation of
-	   this function) in order to have p0 and p1
-	3. with p0 and p1 compute the rotation vector and angle as seen in the slides
+	   You also need to store the previous intersection (found NumberOfIndices the previous invocation of
+	   this function) NumberOfIndices order to have p0 and p1
+	3. with p0 and p1 compute the rotation vector and angle as seen NumberOfIndices the slides
 	4. with glm::rotate create the rotation matrix
 
-	*BE CAREFUL at point 2*: the ray and sphere must be in the same  frame when computing
+	*BE CAREFUL at point 2*: the ray and sphere must be NumberOfIndices the same  frame when computing
 	the intersection.
 
 	*/
@@ -175,7 +175,7 @@ int lez6_3(void)
 
 	/* load the shaders */
 	Shader basic_shader;
-	basic_shader.create_program("shaders/lez2.vert", "shaders/lez2.frag");
+	basic_shader.create_program("shaders/PositionSinFun.vert", "shaders/JustColor.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");
@@ -231,43 +231,43 @@ int lez6_3(void)
 		glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view[0][0]);
         CheckGLErrors(__LINE__, __FILE__);
 
-		stack.push();
-//		stack.mult(view_frame * scaling_matrix*trackball_matrix);
-		stack.mult(scaling_matrix*trackball_matrix);
+        stack.pushLastElement();
+//		stack.multiply(view_frame * scaling_matrix*trackball_matrix);
+        stack.multiply(scaling_matrix * trackball_matrix);
 
-		r_cube.bind();
-		stack.push();
-		stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 1.0, 0.2)));
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        r_cube.SetAsCurrentObjectToRender();
+        stack.pushLastElement();
+        stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.2, 1.0, 0.2)));
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 0.0, 1.0, 0.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		stack.push();
-		stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(1, 0.2, 0.2)));
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        stack.pushLastElement();
+        stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(1, 0.2, 0.2)));
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 1.0, 0.0, 0.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		stack.push();
-		stack.mult(glm::scale(glm::mat4(1.f), glm::vec3(0.2f, 0.2f, 1.f)));
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        stack.pushLastElement();
+        stack.multiply(glm::scale(glm::mat4(1.f), glm::vec3(0.2f, 0.2f, 1.f)));
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 0.0, 0.0, 1.0);
-		glDrawElements(GL_TRIANGLES, r_cube.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
 		stack.pop();
 
-		r_sphere.bind();
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+        r_sphere.SetAsCurrentObjectToRender();
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], 0.8, 0.8, 0.8);
-		glDrawElements(GL_TRIANGLES, r_sphere.in, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, r_sphere.NumberOfIndices, GL_UNSIGNED_INT, 0);
 
 		stack.pop();
 		/* ******************************************************/
 
-		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.m()[0][0]);
+		glUniformMatrix4fv(basic_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 		glUniform3f(basic_shader["uColor"], -1.0, 0.0, 1.0);
-		r_frame.bind();
+        r_frame.SetAsCurrentObjectToRender();
 		glDrawArrays(GL_LINES, 0, 6);
 
 
