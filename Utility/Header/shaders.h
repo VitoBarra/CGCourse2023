@@ -1,12 +1,5 @@
 #pragma once
 
-#include <GL/glew.h>
-#include <cstdio>
-#include <cstring>
-#include <sstream>
-#include <iostream>
-#include <map>
-#include <fstream>
 #include <regex>
 #include "debugging.h"
 #include "IOutil.h"
@@ -30,16 +23,14 @@ public:
     static Shader *CreateShaderFromFile(const char *vertexShader, const char *fragmentShader) {
         auto *shader = new Shader(vertexShader, fragmentShader);
 
-        check_shader(shader->VertexShader);
-        check_shader(shader->FragmentShader);
-        validate_shader_program(shader->Program);
-
         GlDebug_CheckError()
         return shader;
     }
 
-
-    void create_program(const GLchar *nameV, const char *nameF) {
+    void create_program(const std::string& nameV, const std::string& nameF) {
+        create_program(nameV.c_str(), nameF.c_str());
+    }
+    void create_program(const GLchar *nameV, const GLchar *nameF) {
 
         std::string vs_src_code = textFileRead(nameV);
         std::string fs_src_code = textFileRead(nameF);

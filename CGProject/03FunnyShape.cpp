@@ -6,10 +6,6 @@
 #include "shaders.h"
 
 
-void DrawTriangleElements(int n);
-
-void DrawTriangleArray(int n);
-
 Renderable *Draw2D_FunnyShape();
 
 
@@ -36,7 +32,8 @@ int FunnyShape() {
     auto r = Draw2D_FunnyShape();
     r->SetAsCurrentObjectToRender();
 
-    Shader *program_shader = Shader::CreateShaderFromFile("../src/shaders/PositionSinFun.vert", "../src/shaders/JustColor.frag");
+    Shader *program_shader = Shader::CreateShaderFromFile("../src/Shaders/PositionSinFun.vert",
+                                                          "../src/Shaders/ColorWithAlpha.frag");
     program_shader->RegisterUniformVariable("uDelta");
 
     int it = 0;
@@ -51,7 +48,7 @@ int FunnyShape() {
         /* Set the uniform value time dependent value */
         glUniform1f((*program_shader)["uDelta"], (it % 100) / 200.0);
         /* issue the DrawTriangleElements command*/
-        DrawTriangleElements(6 * 3);
+        glDrawElements(GL_TRIANGLES, 6 * 3, GL_UNSIGNED_INT, nullptr);
 
         glUseProgram(0);
 
@@ -66,7 +63,6 @@ int FunnyShape() {
     glfwTerminate();
     return 0;
 }
-
 
 
 Renderable *Draw2D_FunnyShape() {

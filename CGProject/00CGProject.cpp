@@ -1,21 +1,22 @@
 
 #include "GlobalSpace.h"
-#include "simple_shapes.h"
-#include "matrix_stack.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#define TINYGLTF_IMPLEMENTATION
 
 #ifdef COMPILE_PROF_CODE
 #include "source.h"
+
+
 #endif
-
-
-void DrawTriangleElements(int n);
 
 
 int main() {
 
 
-#ifdef  COMPILE_PROF_CODE
-    lez5();
+#ifdef COMPILE_PROF_CODE
+    lez15("knife.obj");
     return 0;
 #endif
 
@@ -26,23 +27,29 @@ int main() {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(1000, 800, "My car with MatrixStack", NULL, NULL);
+    window = glfwCreateWindow(1000, 800, "Trackball", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
     }
+
+    /* declare the callback functions on mouse events */
+    if (glfwRawMouseMotionSupported())
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
+
     /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
     glewInit();
+
 
     printout_opengl_glsl_info();
 
     glEnable(GL_DEPTH_TEST);
 
 
-    Shader shader = *Shader::CreateShaderFromFile("../src/shaders/3DProjectionAndTransformation.vert",
-                                                  "../src/shaders/ColorHack.frag");
+    Shader shader = *Shader::CreateShaderFromFile("../src/Shaders/Basic.vert", "../src/Shaders/FlatShading.frag");
     shader.RegisterUniformVariable("uP"); //View->Projection (NDC)
     shader.RegisterUniformVariable("uV"); //Word->View
     shader.RegisterUniformVariable("uT"); //Transformation

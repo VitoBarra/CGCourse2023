@@ -1,7 +1,7 @@
 # Prerequisites
 *.d
 
-# Compiled Object files
+# Compiled Models files
 *.slo
 *.lo
 *.o
@@ -44,3 +44,8 @@
 .VertexShader/ComputerGrafica/v17/
 
 .VertexShader/
+/Models/
+
+cmake-build-profcode/
+
+cmake-build-withprof/

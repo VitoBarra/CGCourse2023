@@ -1,7 +1,7 @@
-﻿#ifndef _OPENGL_DEBUG_
+﻿#pragma once
+#ifndef _OPENGL_DEBUG_
 #define _OPENGL_DEBUG_
 
-#include <GL/glew.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -36,7 +36,7 @@ static bool CheckGLErrors(int line, const char* file, bool exit_on_error = true)
 		break;
 
 	case GL_INVALID_OPERATION:
-		std::cout << "GL_INVALID_OPERATION\n The specified operation is not allowed NumberOfIndices the current state.The offending command is ignoredand has no other side effect than to set the error flag." << "Line: " << line << " File: " << file << "\n";
+		std::cout << "GL_INVALID_OPERATION\n The specified operation is not allowed in the current state.The offending command is ignoredand has no other side effect than to set the error flag." << "Line: " << line << " File: " << file << "\n";
 		break;
 
 	case GL_INVALID_FRAMEBUFFER_OPERATION:

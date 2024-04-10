@@ -47,8 +47,9 @@ int lez5(void) {
 
     printout_opengl_glsl_info();
 
+    std::string vertex_shader = "../Shaders/";
     Shader basic_shader;
-    basic_shader.create_program("../src/shaders/3DProjectionAndTransformation.vert", "../src/shaders/ColorHack.frag");
+    basic_shader.create_program(vertex_shader + "BasicNoPass.vert", vertex_shader + "flat.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");

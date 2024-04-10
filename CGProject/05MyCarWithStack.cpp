@@ -29,8 +29,8 @@ int MyCarWithStack()
     glEnable(GL_DEPTH_TEST);
 
 
-    Shader shader = *Shader::CreateShaderFromFile("../src/shaders/3DProjectionAndTransformation.vert",
-                                                  "../src/shaders/ColorHack.frag");
+    Shader shader = *Shader::CreateShaderFromFile("../src/Shaders/BasicNoPass.vert",
+                                                  "../src/Shaders/flat.frag");
     shader.RegisterUniformVariable("uP"); //View->Projection (NDC)
     shader.RegisterUniformVariable("uV"); //Word->View
     shader.RegisterUniformVariable("uT"); //Transformation

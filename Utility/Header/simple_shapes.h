@@ -3,8 +3,10 @@
 #include "Renderable.h"
 #include <glm/ext.hpp>  
 #include <glm/gtx/string_cast.hpp>
-#include <stb_image.h>
-#include <string>
+
+
+//#include <stb_image.h>
+//#include <string>
 
 class shape {
 public:
@@ -25,7 +27,6 @@ public:
         r.AddVertexAttribute<float>(&positions[0], 3 * vn, 0, 3);
 		if (!normals.empty())
             r.AddVertexAttribute<float>(&normals[0], 3 * vn, 2, 3);
-
 		if(!colors.empty())
             r.AddVertexAttribute<float>(&colors[0], 3 * vn, 1, 3);
 		if (!texcoords.empty())

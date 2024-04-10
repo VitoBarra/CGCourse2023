@@ -55,7 +55,7 @@ int lez2(void)
     r.add_indices(indices, 3, GL_TRIANGLES);
 
     Shader basic_shader =*new Shader();
-	basic_shader.create_program("../src/shaders/PositionSinFun.vert", "../src/shaders/JustColor.frag");
+	basic_shader.create_program("../src/Shaders/PositionSinFun.vert", "../src/Shaders/ColorWithAlpha.frag");
     basic_shader.RegisterUniformVariable("uDelta");
 	check_shader(basic_shader.VertexShader);
 	check_shader(basic_shader.FragmentShader);

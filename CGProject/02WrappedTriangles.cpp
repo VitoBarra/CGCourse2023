@@ -6,10 +6,6 @@
 #include "shaders.h"
 
 
-void DrawTriangleElements(int n);
-
-void DrawTriangleArray(int n);
-
 Renderable *SetUpRenderable();
 
 
@@ -36,7 +32,7 @@ int WrappedTriangle() {
     auto r = SetUpRenderable();
     r->SetAsCurrentObjectToRender();
 
-    Shader *program_shader = Shader::CreateShaderFromFile("../src/shaders/PositionSinFun.vert", "../src/shaders/JustColor.frag");
+    Shader *program_shader = Shader::CreateShaderFromFile("../src/Shaders/PositionSinFun.vert", "../src/Shaders/ColorWithAlpha.frag");
     program_shader->RegisterUniformVariable("uDelta");
     int it = 0;
     /* Loop until the user closes the window */
@@ -49,7 +45,7 @@ int WrappedTriangle() {
 
         /* issue the DrawTriangleElements command*/
         glUniform1f((*program_shader)["uDelta"], (it % 100) / 200.0);
-        DrawTriangleElements(6 * 3);
+        glDrawElements(GL_TRIANGLES, 6*3, GL_UNSIGNED_INT, nullptr);
 
         glUseProgram(0);
 

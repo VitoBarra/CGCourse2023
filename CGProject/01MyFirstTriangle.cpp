@@ -1,4 +1,3 @@
-#include <imgui.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -9,9 +8,7 @@ void SetUpTriangleVertex();
 
 GLuint CreateShader(GLuint positionAttribIndex, GLuint colorAttribIndex);
 
-void DrawTriangleElements(int n);
 
-void DrawTriangleArray(int n);
 
 int MyFirstTriangle() {
 
@@ -44,7 +41,7 @@ int MyFirstTriangle() {
         glUseProgram(program_shader);
 
         /* issue the DrawTriangleElements command*/
-        DrawTriangleElements(6);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         glUseProgram(0);
 

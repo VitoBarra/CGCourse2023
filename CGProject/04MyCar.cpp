@@ -28,7 +28,7 @@ int MyCar()
     glEnable(GL_DEPTH_TEST);
 
 
-    Shader shader = *Shader::CreateShaderFromFile("../src/shaders/3DProjectionAndTransformation.vert", "../src/shaders/ColorHack.frag");
+    Shader shader = *Shader::CreateShaderFromFile("../src/Shaders/BasicNoPass.vert", "../src/Shaders/flat.frag");
     shader.RegisterUniformVariable("uP"); //View->Projection (NDC)
     shader.RegisterUniformVariable("uV"); //Word->View
     shader.RegisterUniformVariable("uT"); //Transformation
@@ -101,18 +101,18 @@ int MyCar()
         r_cube.SetAsCurrentObjectToRender();
         glUniformMatrix4fv(shader["uT"], 1, GL_FALSE, &(carRotator * cubeToBody)[0][0]);
         glUniform3f(shader["uColor"], 0.0, 1.0, 0.8);
-        glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, nullptr);
 
         glUniformMatrix4fv(shader["uT"], 1, GL_FALSE, &(carRotator * cubeToCarRoof)[0][0]);
         glUniform3f(shader["uColor"], 0.0, 0.0, 1.0);
-        glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, r_cube.NumberOfIndices, GL_UNSIGNED_INT, nullptr);
 
         /* Draw weals */
         r_cyl.SetAsCurrentObjectToRender();
         glUniform3f(shader["uColor"], 0.0, 1.0, 0.0);
         for (int iw = 0; iw < 4; iw++) {
             glUniformMatrix4fv(shader["uT"], 1, GL_FALSE, &(carRotator * cylinderToWheel[iw])[0][0]);
-            glDrawElements(GL_TRIANGLES, r_cyl.NumberOfIndices, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, r_cyl.NumberOfIndices, GL_UNSIGNED_INT, nullptr);
         }
 
 

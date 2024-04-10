@@ -1,11 +1,9 @@
 #pragma once
 
-#include <GL/glew.h>
 #include <vector>
 #include <glm/glm.hpp>
 #include "texture.h"
 #include <iostream>
-#include <typeinfo>
 
 struct box3 {
     /// min coordinate point
@@ -14,7 +12,7 @@ struct box3 {
     /// max coordinate point
     glm::vec3 max;
 
-    /// The bounding box constructor (make it of size s centered NumberOfIndices 0^3
+    /// The bounding box constructor (make it of size s centered in 0^3
     inline box3(float s) {
         min = glm::vec3(-s / 2.f);
         max = glm::vec3(s / 2.f);
@@ -105,7 +103,7 @@ public:
     unsigned int elem_type;
 
     // number of vertices
-    unsigned int vn;
+    unsigned int NumberOfVertices;
 
     // number of indices
     unsigned int NumberOfIndices;
@@ -135,7 +133,7 @@ public:
 
         glBindVertexArray(VertexArrayID);
 
-        /* create a buffer for the render data NumberOfIndices video RAM */
+        /* create a buffer for the render data in video RAM */
         VertexAttributeBuffers.push_back(va_id);
 
         glBindBuffer(GL_ARRAY_BUFFER, VertexAttributeBuffers.back());
@@ -159,13 +157,13 @@ public:
 
         glBindVertexArray(VertexArrayID);
 
-        /* create a buffer for the render data NumberOfIndices video RAM */
+        /* create a buffer for the render data in video RAM */
         VertexAttributeBuffers.push_back(0);
         glCreateBuffers(1, &VertexAttributeBuffers.back());
 
         glBindBuffer(GL_ARRAY_BUFFER, VertexAttributeBuffers.back());
 
-        /* declare what data NumberOfIndices RAM are filling the buffering video RAM */
+        /* declare what data in RAM are filling the buffering video RAM */
         glBufferData(GL_ARRAY_BUFFER, sizeof(T) * count, values, GL_STATIC_DRAW);
     }
 

@@ -7,15 +7,21 @@ find_package(OpenGL REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+#find_package(glad CONFIG REQUIRED)
+find_package(tinyobjloader CONFIG REQUIRED)
 
-set(CG_LIBRARY GLEW::glew imgui::imgui glfw glm::glm OpenGL::GL)
-set(CG_INCLUDE_DIR Utility/Header ${Stb_INCLUDE_DIR})
+
+#set(CG_LIBRARY GLEW::glew imgui::imgui glad::glad glfw glm::glm OpenGL::GL tinyobjloader::tinyobjloader)
+set(CG_LIBRARY GLEW::glew imgui::imgui glfw glm::glm OpenGL::GL tinyobjloader::tinyobjloader )
+set(CG_INCLUDE_DIR Utility/Header ${Stb_INCLUDE_DIR} )
 
 
 file(GLOB_RECURSE CG_FILES CGProject/*.cpp)
 add_executable(CGProject ${CG_FILES} CGProject/GlobalSpace.h)
 target_include_directories(CGProject PRIVATE ${CG_INCLUDE_DIR})
-target_link_libraries(CGProject PRIVATE ${CG_LIBRARY})
+target_link_libraries(CGProject PRIVATE ${CG_LIBRARY} )
+
+target_compile_definitions(CGProject PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 
 # Se il risultato non cambia cancellare la cache di cmake (Tools->Cmake->Delete Cache and Reload)
 option(COMPILE_PROF_CODE "Compile prof code" OFF)
