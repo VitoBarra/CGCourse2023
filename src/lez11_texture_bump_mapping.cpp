@@ -23,21 +23,21 @@ and set the path properly.
 
 
 /* trackballs for controlloing the scene (0) or the light direction (1) */
-trackball tb[2];
+trackball trackball[2];
 
 /* which trackball is currently used */
-int curr_tb;
+int curr_tb_9;
 
 /* projection matrix*/
-glm::mat4 proj;
+glm::mat4 proj_9;
 
 /* view matrix */
-glm::mat4 view;
+glm::mat4 view_9;
 
 
 /* callback function called when the mouse is moving */
 static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
-    tb[curr_tb].mouse_move(proj, view, xpos, ypos);
+    trackball[curr_tb_9].mouse_move(proj_9, view_9, xpos, ypos);
 }
 
 /* callback function called when a mouse button is pressed */
@@ -45,22 +45,22 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        tb[curr_tb].mouse_press(proj, view, xpos, ypos);
+        trackball[curr_tb_9].mouse_press(proj_9, view_9, xpos, ypos);
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        tb[curr_tb].mouse_release();
+        trackball[curr_tb_9].mouse_release();
     }
 }
 
 /* callback function called when a mouse wheel is rotated */
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-    if (curr_tb == 0)
-        tb[0].mouse_scroll(xoffset, yoffset);
+    if (curr_tb_9 == 0)
+        trackball[0].mouse_scroll(xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    /* every time any key is presse it switch from controlling trackball tb[0] to tb[1] and viceversa */
+    /* every time any key is presse it switch from controlling trackball trackball[0] to trackball[1] and viceversa */
     if (action == GLFW_PRESS)
-        curr_tb = 1 - curr_tb;
+        curr_tb_9 = 1 - curr_tb_9;
 
 }
 
@@ -123,8 +123,8 @@ void gui_setup() {
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("Trackball")) {
-        if (ImGui::Selectable("control scene", curr_tb == 0)) curr_tb = 0;
-        if (ImGui::Selectable("control ligth", curr_tb == 1)) curr_tb = 1;
+        if (ImGui::Selectable("control scene", curr_tb_9 == 0)) curr_tb_9 = 0;
+        if (ImGui::Selectable("control ligth", curr_tb_9 == 1)) curr_tb_9 = 1;
 
         ImGui::EndMenu();
     }
@@ -230,19 +230,19 @@ int lez11_1(void) {
     glm::vec4 Ldir = glm::vec4(0.0, 1.0, 0.0, 0.0);
 
     /* Transformation to setup the point of view on the scene */
-    proj = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
-    view = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
+    view_9 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 
     glUseProgram(texture_shader.Program);
-    glUniformMatrix4fv(texture_shader["uP"], 1, GL_FALSE, &proj[0][0]);
-    glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(texture_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
+    glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
     glUseProgram(0);
     CheckGLErrors(__LINE__, __FILE__, true);
 
 
     glUseProgram(flat_shader.Program);
-    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj[0][0]);
-    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
+    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
     glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
     glUseProgram(0);
     glEnable(GL_DEPTH_TEST);
@@ -253,9 +253,9 @@ int lez11_1(void) {
     matrix_stack stack;
 
     /* set the trackball position */
-    tb[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    tb[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    curr_tb = 0;
+    trackball[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    trackball[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    curr_tb_9 = 0;
 
     /* define the viewport  */
     glViewport(0, 0, 1000, 800);
@@ -273,11 +273,11 @@ int lez11_1(void) {
         ImGui::NewFrame();
         gui_setup();
 
-        /* light direction transformed by the trackball tb[1]*/
-        glm::vec4 curr_Ldir = tb[1].matrix() * Ldir;
+        /* light direction transformed by the trackball trackball[1]*/
+        glm::vec4 curr_Ldir = trackball[1].matrix() * Ldir;
 
         stack.pushLastElement();
-        stack.multiply(tb[0].matrix());
+        stack.multiply(trackball[0].matrix());
 
         stack.pushLastElement();
 
@@ -319,7 +319,7 @@ int lez11_1(void) {
 
         // render the light direction
         stack.pushLastElement();
-        stack.multiply(tb[1].matrix());
+        stack.multiply(trackball[1].matrix());
 
         glUseProgram(flat_shader.Program);
         glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);

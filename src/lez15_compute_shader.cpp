@@ -32,16 +32,16 @@ and set the path properly.
 #include <glm/gtx/string_cast.hpp>
 
 /* light direction NumberOfIndices world space*/
-glm::vec4 Ldir;
+glm::vec4 Ldir_9;
 
-trackball tb[2];
-int curr_tb;
+trackball trackball[2];
+int curr_tb_9;
 
 /* projection matrix*/
-glm::mat4 proj;
+glm::mat4 proj_9;
 
 /* view matrix */
-glm::mat4 view;
+glm::mat4 view_9;
 
 
 /* Program Shaders used */
@@ -60,7 +60,7 @@ void draw_line(glm::vec4 l) {
 
 /* callback function called when the mouse is moving */
 static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
-    tb[curr_tb].mouse_move(proj, view, xpos, ypos);
+    trackball[curr_tb_9].mouse_move(proj_9, view_9, xpos, ypos);
 }
 
 /* callback function called when a mouse button is pressed */
@@ -68,22 +68,22 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        tb[curr_tb].mouse_press(proj, view, xpos, ypos);
+        trackball[curr_tb_9].mouse_press(proj_9, view_9, xpos, ypos);
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        tb[curr_tb].mouse_release();
+        trackball[curr_tb_9].mouse_release();
     }
 }
 
 /* callback function called when a mouse wheel is rotated */
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-    if (curr_tb == 0)
-        tb[0].mouse_scroll(xoffset, yoffset);
+    if (curr_tb_9 == 0)
+        trackball[0].mouse_scroll(xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    /* every time any key is presse it switch from controlling trackball tb[0] to tb[1] and viceversa */
+    /* every time any key is presse it switch from controlling trackball trackball[0] to trackball[1] and viceversa */
     if (action == GLFW_PRESS)
-        curr_tb = 1 - curr_tb;
+        curr_tb_9 = 1 - curr_tb_9;
 
 }
 
@@ -275,7 +275,7 @@ int lez15(std::string name) {
         glUniformMatrix4fv(tex_shader["uT"], 1, GL_FALSE,
                            &glm::rotate(glm::mat4(1.f), glm::radians(90.f), glm::vec3(1.f, 0.f, 0.f))[0][0]);
         r_plane.SetAsCurrentObjectToRender();
-        glDrawElements(GL_TRIANGLES, r_plane.inds[0].count, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, r_plane.elements[0].vertexCount, GL_UNSIGNED_INT, 0);
         glUseProgram(0);
 
 

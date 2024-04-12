@@ -1,8 +1,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "../../Utility/Header/shaders.h"
-#include "../../Utility/Header/simple_shapes.h"
-#include "../../Utility/Header/matrix_stack.h"
+#include "shaders.h"
+#include "simple_shapes.h"
+#include "matrix_stack.h"
 
 /*
 GLM library for math  https://github.com/g-truc/glm
@@ -15,10 +15,10 @@ and set the path properly.
 
 
 /* projection matrix*/
-glm::mat4 proj;
+glm::mat4 proj_9;
 
 /* view matrix and view_frame*/
-glm::mat4 view, view_frame;
+glm::mat4 view_9, view_frame;
 
 /* a bool variable that indicates if we are currently rotating the trackball*/
 bool is_trackball_dragged;
@@ -118,7 +118,7 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 
         float depthvalue;
         glReadPixels(xpos, 800 - ypos, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depthvalue);
-        glm::vec3 hit = glm::unProject(glm::vec3(xpos, 800 - ypos, depthvalue), view, proj, glm::vec4(0, 0, 1000, 800));
+        glm::vec3 hit = glm::unProject(glm::vec3(xpos, 800 - ypos, depthvalue), view_9, proj_9, glm::vec4(0, 0, 1000, 800));
         std::cout << " hit point " << glm::to_string(hit) << std::endl;
 
         GLfloat col[4];
@@ -214,18 +214,18 @@ int lez7(void) {
 
 
     /* Transformation to setup the point of view on the scene */
-    proj = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
-    view = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-    view_frame = glm::inverse(view);
+    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
+    view_9 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    view_frame = glm::inverse(view_9);
 
     glUseProgram(basic_shader.Program);
-    glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj[0][0]);
-    glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
+    glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
     glUseProgram(0);
 
     glUseProgram(flat_shader.Program);
-    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj[0][0]);
-    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
+    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
     glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0, 1.f);
     glUseProgram(0);
     glEnable(GL_DEPTH_TEST);
@@ -329,8 +329,8 @@ int lez7(void) {
         stack.multiply(glm::translate(glm::mat4(1.f), glm::vec3(0.0, 0.0, 1.f)));
         glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
         glUniform4f(basic_shader["uColor"], 1.0, 1.0, 1.0, 1.0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.inds[1].ind);
-        glDrawElements(GL_LINES, r_sphere.inds[1].count, GL_UNSIGNED_INT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_sphere.elements[1].ind);
+        glDrawElements(GL_LINES, r_sphere.elements[1].vertexCount, GL_UNSIGNED_INT, 0);
 
 
         glUseProgram(basic_shader.Program);

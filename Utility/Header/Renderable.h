@@ -80,9 +80,15 @@ class Renderable {
 
 public:
     struct element_array {
-        GLuint ind, elem_type, count;
+        GLuint ind;
+        GLuint element_type;
+        GLsizei vertexCount;
 
         element_array() = default;
+
+        void Render() const {
+            glDrawElements(element_type, vertexCount, GL_UNSIGNED_INT, nullptr);
+        }
     };
 
     // vertex array object
@@ -95,7 +101,7 @@ public:
     GLuint ind;
 
     // vector of element array
-    std::vector<element_array> inds;
+    std::vector<element_array> elements;
 
     // element arrays (backward compatible implementation)
 
@@ -106,12 +112,12 @@ public:
     unsigned int NumberOfVertices;
 
     // number of indices
-    unsigned int NumberOfIndices;
+    GLsizei NumberOfIndices;
 
     // bounding box of the shape
     box3 bbox;
 
-    material mtl;
+    material material;
 
     Renderable() {
         glGenVertexArrays(1, &VertexArrayID);
@@ -244,20 +250,20 @@ public:
         add_element_array(indices, count, ELEM_TYPE);
         NumberOfIndices = count;
         elem_type = ELEM_TYPE;
-        ind = inds.back().ind;
+        ind = elements.back().ind;
         return ind;
     };
 
     GLuint add_element_array(void *indices, unsigned int count, unsigned int ELEM_TYPE) {
-        inds.push_back(element_array());
+        elements.push_back(element_array());
         glBindVertexArray(VertexArrayID);
-        glGenBuffers(1, &inds.back().ind);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, inds.back().ind);
+        glGenBuffers(1, &elements.back().ind);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements.back().ind);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * count, indices, GL_STATIC_DRAW);
         glBindVertexArray(0);
-        inds.back().elem_type = ELEM_TYPE;
-        inds.back().count = count;
-        return inds.back().ind;
+        elements.back().element_type = ELEM_TYPE;
+        elements.back().vertexCount = count;
+        return elements.back().ind;
     };
 
     GLuint add_indices(std::vector<GLuint> indices, unsigned int ELEM_TYPE) {
@@ -267,5 +273,11 @@ public:
     GLuint add_element_array(std::vector<GLuint> indices, unsigned int ELEM_TYPE) {
         return add_element_array(&indices[0], indices.size(), ELEM_TYPE);
     };
+
+    void RenderTriangles() {
+        glDrawElements(GL_TRIANGLES, NumberOfIndices, GL_UNSIGNED_INT, nullptr);
+    }
+
+
 
 };

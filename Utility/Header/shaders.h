@@ -3,6 +3,7 @@
 #include <regex>
 #include "debugging.h"
 #include "IOutil.h"
+#include <glm/ext.hpp>
 
 class Shader {
 public:
@@ -16,8 +17,17 @@ public:
         create_program(nameV->c_str(), nameF->c_str());
     }
 
-    Shader(const GLchar *nameV, const char *nameF) {
+    Shader(const GLchar *nameV, const GLchar *nameF) {
         create_program(nameV, nameF);
+    }
+
+    static Shader *CreateShaderFromFile(const std::string &shaderPath, const std::string &vertexShader,
+                                        const std::string &fragmentShader) {
+        return CreateShaderFromFile(shaderPath + vertexShader, shaderPath + fragmentShader);
+    }
+
+    static Shader *CreateShaderFromFile(const std::string &vertexShader, const std::string &fragmentShader) {
+        return CreateShaderFromFile(vertexShader.c_str(), fragmentShader.c_str());
     }
 
     static Shader *CreateShaderFromFile(const char *vertexShader, const char *fragmentShader) {
@@ -27,9 +37,10 @@ public:
         return shader;
     }
 
-    void create_program(const std::string& nameV, const std::string& nameF) {
+    void create_program(const std::string &nameV, const std::string &nameF) {
         create_program(nameV.c_str(), nameF.c_str());
     }
+
     void create_program(const GLchar *nameV, const GLchar *nameF) {
 
         std::string vs_src_code = textFileRead(nameV);
@@ -53,19 +64,39 @@ public:
     }
 
 
-    void SetAsCurrentProgram()
-    {
+    void SetAsCurrentProgram() const {
         glUseProgram(Program);
     }
 
-    void RegisterUniformVariable(std::string name) {
-        ShaderUniformVariable[name] = glGetUniformLocation(Program, name.c_str());
+    static void UnloadProgram() {
+        glUseProgram(0);
     }
 
-    int operator[](std::string name) {
+    Shader RegisterUniformVariable(const std::string &name) {
+        ShaderUniformVariable[name] = glGetUniformLocation(Program, name.c_str());
+        return *this;
+    }
+
+    int operator[](const std::string &name) {
         return ShaderUniformVariable[name];
     }
 
+
+    void SetUniformMat4f(const char *uniformName, glm::mat4 matrix) {
+        glUniformMatrix4fv((*this)[uniformName], 1, GL_FALSE, &matrix[0][0]);
+    }
+
+    void SetUniformVec3f(const char *uniformName, float a, float b, float c) {
+        glUniform3f((*this)[uniformName], a, b, c);
+    }
+
+    void SetUniformVec3f(const char *uniformName, float vec[3]) {
+        glUniform3fv((*this)[uniformName], 1, &vec[0]);
+    }
+
+    void SetUniform1f(const char *uniformName, float value) {
+        glUniform1f((*this)[uniformName], value);
+    }
 
 private:
     bool create_shader(const GLchar *src, unsigned int SHADER_TYPE) {
@@ -77,9 +108,11 @@ private:
             case GL_FRAGMENT_SHADER:
                 s = FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
                 break;
+            default:
+                break;
         }
 
-        glShaderSource(s, 1, &src, NULL);
+        glShaderSource(s, 1, &src, nullptr);
         glCompileShader(s);
         int status;
         glGetShaderiv(s, GL_COMPILE_STATUS, &status);
@@ -105,11 +138,11 @@ private:
         while (getline(check1, intermediate, ';')) {
             std::string _ = std::regex_replace(intermediate, std::regex("  "), " ");
 
-            if (intermediate.find(" ") == 0)
+            if (intermediate.find(' ') == 0)
                 intermediate.erase(0, 1);
 
             if (intermediate.find("uniform") == 0) {
-                pos = intermediate.find_last_of(" ");
+                pos = intermediate.find_last_of(' ');
                 std::string uniform_name = intermediate.substr(pos + 1, intermediate.length() - pos);
                 this->RegisterUniformVariable(uniform_name);
                 tokens.push_back(intermediate.substr(pos + 1, intermediate.length() - pos));

@@ -26,7 +26,7 @@ class trackball {
 	float radius;
 
 
-	/* transform from viewport to window coordinates NumberOfIndices thee view reference frame */
+	/* transform from viewport to window coordinates in thee view reference frame */
 	glm::vec2 viewport_to_view(glm::mat4 proj, double pX, double pY) {
 		GLint vp[4];
 		glm::mat4 proj_inv = glm::inverse(proj);

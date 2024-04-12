@@ -16,8 +16,8 @@ set(CG_LIBRARY GLEW::glew imgui::imgui glfw glm::glm OpenGL::GL tinyobjloader::t
 set(CG_INCLUDE_DIR Utility/Header ${Stb_INCLUDE_DIR} )
 
 
-file(GLOB_RECURSE CG_FILES CGProject/*.cpp)
-add_executable(CGProject ${CG_FILES} CGProject/GlobalSpace.h)
+file(GLOB_RECURSE CG_FILES CGProject/*.cpp CGProject/*.h)
+add_executable(CGProject ${CG_FILES})
 target_include_directories(CGProject PRIVATE ${CG_INCLUDE_DIR})
 target_link_libraries(CGProject PRIVATE ${CG_LIBRARY} )
 

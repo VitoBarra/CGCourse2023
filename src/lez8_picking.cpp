@@ -1,8 +1,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include "../../Utility/Header/shaders.h"
-#include "../../Utility/Header/simple_shapes.h"
-#include "../../Utility/Header/matrix_stack.h"
+#include "shaders.h"
+#include "simple_shapes.h"
+#include "matrix_stack.h"
 
 /*
 GLM library for math  https://github.com/g-truc/glm
@@ -15,10 +15,10 @@ and set the path properly.
 
 
 /* projection matrix*/
-glm::mat4 proj;
+glm::mat4 proj_9;
 
 /* view matrix and view_frame*/
-glm::mat4 view, view_frame;
+glm::mat4 view_9, view_frame;
 
 /* a bool variable that indicates if we are currently rotating the trackball*/
 bool is_trackball_dragged;
@@ -118,12 +118,12 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
             glReadPixels((int) xpos, 800 - (int) ypos, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depthvalue);
             glm::vec4 ndc = glm::vec4(-1.f + xpos / 1000.f * 2, -1.f + (800 - ypos) / 800.f * 2.f,
                                       -1.f + depthvalue * 2.f, 1.f);
-            glm::vec4 hit1 = glm::inverse(proj * view) * ndc;
+            glm::vec4 hit1 = glm::inverse(proj_9 * view_9) * ndc;
             hit1 /= hit1.w;
             std::cout << " hit point " << glm::to_string(hit1) << std::endl;
 
             // from viewport to world space with unProject
-            glm::vec3 hit = glm::unProject(glm::vec3(xpos, 800 - ypos, depthvalue), view, proj,
+            glm::vec3 hit = glm::unProject(glm::vec3(xpos, 800 - ypos, depthvalue), view_9, proj_9,
                                            glm::vec4(0, 0, 1000, 800));
             std::cout << " hit point " << glm::to_string(hit) << std::endl;
 
@@ -185,8 +185,7 @@ int lez8(void) {
 
     /* load the Shaders */
     std::string shaders_path = "../Shaders/";
-    Shader basic_shader;
-    basic_shader.create_program(shaders_path + "Basic.vert", shaders_path + "FlatShading.frag");
+    Shader basic_shader = *Shader::CreateShaderFromFile(shaders_path, "Basic.vert", "FlatShading.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");
@@ -195,8 +194,7 @@ int lez8(void) {
     check_shader(basic_shader.FragmentShader);
     validate_shader_program(basic_shader.Program);
 
-    Shader flat_shader;
-    flat_shader.create_program(shaders_path + "Basic.vert", shaders_path + "FlatColor.frag");
+    Shader flat_shader = *Shader::CreateShaderFromFile(shaders_path, "Basic.vert", "FlatColor.frag");;
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -237,18 +235,18 @@ int lez8(void) {
     s_plane.to_renderable(r_plane);
 
     /* Transformation to setup the point of view on the scene */
-    proj = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
-    view = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-    view_frame = glm::inverse(view);
+    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
+    view_9 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    view_frame = glm::inverse(view_9);
 
     glUseProgram(basic_shader.Program);
-    glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj[0][0]);
-    glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
+    glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
     glUseProgram(0);
 
     glUseProgram(flat_shader.Program);
-    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj[0][0]);
-    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
+    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
     glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0, 1.f);
     glUseProgram(0);
     glEnable(GL_DEPTH_TEST);
@@ -287,8 +285,8 @@ int lez8(void) {
         stack.pushLastElement();
         glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
         glUniform4f(basic_shader["uColor"], 1.0, 1.0, 1.0, 1.0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.inds[1].ind);
-        glDrawElements(GL_LINES, r_plane.inds[1].count, GL_UNSIGNED_INT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r_plane.elements[1].ind);
+        glDrawElements(GL_LINES, r_plane.elements[1].vertexCount, GL_UNSIGNED_INT, 0);
 
 
         glUseProgram(basic_shader.Program);
