@@ -28,7 +28,7 @@ and set the path properly.
 #include <glm/ext.hpp>
 
 /* light direction NumberOfIndices world space*/
-glm::vec4 Ldir_9;
+glm::vec4 Ldir_14;
 
 /* projector */
 float depth_bias;
@@ -38,16 +38,16 @@ int g_buffer_size_x, g_buffer_size_y;
 float radius, depthscale;
 
 /* trackballs for controlloing the scene (0) or the light direction (1) */
-trackball trackball[2];
+trackball trackballs[2];
 
 /* which trackball is currently used */
-int curr_tb_9;
+int curr_tb_14;
 
 /* projection matrix*/
-glm::mat4 proj_9;
+glm::mat4 proj_14;
 
 /* view matrix */
-glm::mat4 view_9;
+glm::mat4 view_14;
 
 /* matrix stack*/
 matrix_stack stack;
@@ -71,8 +71,8 @@ view_manipulator view_man;
 /* callback function called when the mouse is moving */
 static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
     if (ImGui::GetIO().WantCaptureMouse) return;
-    if (curr_tb_9 < 2)
-        trackball[curr_tb_9].mouse_move(proj_9, view_9, xpos, ypos);
+    if (curr_tb_14 < 2)
+        trackballs[curr_tb_14].mouse_move(proj_14, view_14, xpos, ypos);
     else
         view_man.mouse_move(xpos, ypos);
 }
@@ -84,13 +84,13 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        if (curr_tb_9 < 2)
-            trackball[curr_tb_9].mouse_press(proj_9, view_9, xpos, ypos);
+        if (curr_tb_14 < 2)
+            trackballs[curr_tb_14].mouse_press(proj_14, view_14, xpos, ypos);
         else
             view_man.mouse_press(xpos, ypos);
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        if (curr_tb_9 < 2)
-            trackball[curr_tb_9].mouse_release();
+        if (curr_tb_14 < 2)
+            trackballs[curr_tb_14].mouse_release();
         else
             view_man.mouse_release();
     }
@@ -100,14 +100,14 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     if (ImGui::GetIO().WantCaptureMouse) return;
 
-    if (curr_tb_9 == 0)
-        trackball[0].mouse_scroll(xoffset, yoffset);
+    if (curr_tb_14 == 0)
+        trackballs[0].mouse_scroll(xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     /* every time any key is presse it switch from controlling trackball trackball[0] to trackball[1] and viceversa */
     if (action == GLFW_PRESS)
-        curr_tb_9 = 1 - curr_tb_9;
+        curr_tb_14 = 1 - curr_tb_14;
 
 }
 
@@ -153,9 +153,9 @@ void gui_setup() {
     }
 
     if (ImGui::BeginMenu("Trackball")) {
-        if (ImGui::Selectable("control scene", curr_tb_9 == 0)) curr_tb_9 = 0;
-        if (ImGui::Selectable("control light", curr_tb_9 == 1)) curr_tb_9 = 1;
-        if (ImGui::Selectable("control view", curr_tb_9 == 2)) curr_tb_9 = 2;
+        if (ImGui::Selectable("control scene", curr_tb_14 == 0)) curr_tb_14 = 0;
+        if (ImGui::Selectable("control light", curr_tb_14 == 1)) curr_tb_14 = 1;
+        if (ImGui::Selectable("control view", curr_tb_14 == 2)) curr_tb_14 = 2;
 
         ImGui::EndMenu();
     }
@@ -247,7 +247,7 @@ void blur_texture(GLint tex_id, Renderable r_quad) {
     CheckGLErrors(__LINE__, __FILE__, true);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_blur.id_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_blur.id_tex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_blur.id_texture, 0);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(blur_shader.Program);
     glUniform2f(blur_shader["uBlur"], 0.0, 1.f / fbo_blur.h);
@@ -257,7 +257,7 @@ void blur_texture(GLint tex_id, Renderable r_quad) {
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glBindTexture(GL_TEXTURE_2D, fbo_blur.id_tex);
+    glBindTexture(GL_TEXTURE_2D, fbo_blur.id_texture);
     glUniform2f(blur_shader["uBlur"], 1.f / fbo_blur.w, 0.0);
     draw_full_screen_quad(r_quad);
     CheckGLErrors(__LINE__, __FILE__, true);
@@ -325,16 +325,14 @@ int lez14(void) {
 
 
     /* load the knife model */
-    std::string models_path = "../Models/knife/";
-    _chdir(models_path.c_str());
 
-    load_obj(r_knife, "/.","/knife_50k.obj");
+    load_obj(r_knife,"../Models/knife/","knife_50k.obj");
 
     /* create a quad with size 2 centered to the origin and on the XY pane */
     auto r_quad = shape_maker::quad();
 
     /* initial light direction */
-    Ldir_9 = glm::vec4(0.0, 1.0, 0.0, 0.0);
+    Ldir_14 = glm::vec4(0.0, 1.0, 0.0, 0.0);
 
     /* light projection */
     CheckGLErrors(__LINE__, __FILE__, true);
@@ -343,20 +341,20 @@ int lez14(void) {
     CheckGLErrors(__LINE__, __FILE__, true);
 
     /* Transformation to setup the point of view on the scene */
-    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 15.f);
-    view_9 = glm::lookAt(glm::vec3(0, 3, 4.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-    view_9 = glm::lookAt(glm::vec3(0, 0, 7.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    proj_14 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 15.f);
+    view_14 = glm::lookAt(glm::vec3(0, 3, 4.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    view_14 = glm::lookAt(glm::vec3(0, 0, 7.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 
     glUseProgram(g_buffer_shader.Program);
-    glUniformMatrix4fv(g_buffer_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(g_buffer_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(g_buffer_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(g_buffer_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     glUseProgram(0);
 
     CheckGLErrors(__LINE__, __FILE__, true);
 
     glUseProgram(flat_shader.Program);
-    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
     glUseProgram(0);
     glEnable(GL_DEPTH_TEST);
@@ -365,10 +363,10 @@ int lez14(void) {
     print_info();
 
     /* set the trackball position */
-    trackball[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    trackball[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    trackballs[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    trackballs[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
     view_man.reset();
-    curr_tb_9 = 0;
+    curr_tb_14 = 0;
 
     /* define the viewport  */
     glViewport(0, 0, 1000, 800);
@@ -404,17 +402,18 @@ int lez14(void) {
         gui_setup();
 
         /* rotate the view accordingly to view_rot*/
-        glm::mat4 curr_view = view_man.apply_to_view(view_9);
+        glm::mat4 curr_view = view_man.apply_to_view(view_14);
 
         /* light direction transformed by the trackball trackball[1]*/
-        glm::vec4 curr_Ldir = trackball[1].matrix() * Ldir_9;
+        glm::vec4 curr_Ldir = trackballs[1].matrix() * Ldir_14;
 
         stack.pushLastElement();
-        stack.multiply(trackball[0].matrix());
+        stack.multiply(trackballs[0].matrix());
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo.id_fbo);
+        CheckGLErrors(__LINE__, __FILE__, true);
 
-        glBindTexture(GL_TEXTURE_2D, fbo.id_tex);
+        glBindTexture(GL_TEXTURE_2D, fbo.id_texture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, g_buffer_size_x, g_buffer_size_y, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
         glBindTexture(GL_TEXTURE_2D, 0);
         CheckGLErrors(__LINE__, __FILE__, true);
@@ -441,7 +440,7 @@ int lez14(void) {
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         glUseProgram(ao_shader.Program);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, fbo.id_tex);
+        glBindTexture(GL_TEXTURE_2D, fbo.id_texture);
 
         glUniform1i(ao_shader["uDepthMap"], 0);
         glUniform1f(ao_shader["uRadius"], radius);
@@ -452,9 +451,9 @@ int lez14(void) {
         draw_full_screen_quad(r_quad);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        blur_texture(fbo_ao.id_tex, r_quad);
-        blur_texture(fbo_ao.id_tex, r_quad);
-        blur_texture(fbo_ao.id_tex, r_quad);
+        blur_texture(fbo_ao.id_texture, r_quad);
+        blur_texture(fbo_ao.id_texture, r_quad);
+        blur_texture(fbo_ao.id_texture, r_quad);
 
         glViewport(0, 0, 1000, 800);
 
@@ -470,7 +469,7 @@ int lez14(void) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, fbo.id_tex1);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, fbo_ao.id_tex);
+        glBindTexture(GL_TEXTURE_2D, fbo_ao.id_texture);
 
         glm::vec4 LVS = curr_view * curr_Ldir;
         glUniform3f(final_shader["uLVS"], LVS.x, LVS.y, LVS.z);
@@ -493,7 +492,7 @@ int lez14(void) {
 
         // render the light direction
         stack.pushLastElement();
-        stack.multiply(trackball[1].matrix());
+        stack.multiply(trackballs[1].matrix());
 
         glUseProgram(flat_shader.Program);
         glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);

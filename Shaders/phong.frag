@@ -21,17 +21,17 @@ vec3 phong (vec3 L, vec3 pos, vec3 N){
     vec3 R = -L+2*dot(L, N)*N;
     float spec = max(0.0, pow(dot(V, R), 10));
 
-    return LN*uDiffuseColor + spec * uSpecularColor+0.0*uEmissiveColor;
+    return uEmissiveColor+ LN*uDiffuseColor + spec * uSpecularColor;
 }
 
 void main(void)
 {
 
-    if (uShadingMode == 2){
+    if (uShadingMode == 2){ //use pre-calculated normal
         color = vec4(phong(vLdirVS, normalize(vposVS), normalize(vNormalVS)), 1.0);
     }
     else
-    if (uShadingMode == 3){
+    if (uShadingMode >= 3){ //Calculate normal
         vec3 N = normalize(cross(dFdx(vposVS), dFdy(vposVS)));
         color = vec4(phong(vLdirVS, vposVS, N), 1.0);
     }

@@ -29,16 +29,16 @@ and set the path properly.
 #include <glm/gtx/string_cast.hpp>
 
 /* light direction NumberOfIndices world space*/
-glm::vec4 Ldir_9;
+glm::vec4 Ldir_14;
 
-trackball trackball[2];
-int curr_tb_9;
+trackball trackballs[2];
+int curr_tb_14;
 
 /* projection matrix*/
-glm::mat4 proj_9;
+glm::mat4 proj_14;
 
 /* view matrix */
-glm::mat4 view_9;
+glm::mat4 view_14;
 
 
 void draw_line(glm::vec4 l) {
@@ -51,7 +51,7 @@ void draw_line(glm::vec4 l) {
 
 /* callback function called when the mouse is moving */
 static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
-    trackball[curr_tb_9].mouse_move(proj_9, view_9, xpos, ypos);
+    trackballs[curr_tb_14].mouse_move(proj_14, view_14, xpos, ypos);
 }
 
 /* callback function called when a mouse button is pressed */
@@ -59,22 +59,22 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        trackball[curr_tb_9].mouse_press(proj_9, view_9, xpos, ypos);
+        trackballs[curr_tb_14].mouse_press(proj_14, view_14, xpos, ypos);
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        trackball[curr_tb_9].mouse_release();
+        trackballs[curr_tb_14].mouse_release();
     }
 }
 
 /* callback function called when a mouse wheel is rotated */
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-    if (curr_tb_9 == 0)
-        trackball[0].mouse_scroll(xoffset, yoffset);
+    if (curr_tb_14 == 0)
+        trackballs[0].mouse_scroll(xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     /* every time any key is presse it switch from controlling trackball trackball[0] to trackball[1] and viceversa */
     if (action == GLFW_PRESS)
-        curr_tb_9 = 1 - curr_tb_9;
+        curr_tb_14 = 1 - curr_tb_14;
 
 }
 
@@ -170,7 +170,7 @@ int lez11_2(void) {
     shape s_plane;
     shape_maker::rectangle(s_plane, 10, 10);
     s_plane.compute_edge_indices_from_indices();
-    s_plane.to_renderable(r_plane);
+    s_plane.ToRenderable(r_plane);
 
     /* load from file */
     std::vector<Renderable> r_cb;
@@ -178,22 +178,22 @@ int lez11_2(void) {
     //load_obj(r_cb, "sphere.obj");
 
     /* initial light direction */
-    Ldir_9 = glm::vec4(0.0, 1.0, 0.0, 0.0);
+    Ldir_14 = glm::vec4(0.0, 1.0, 0.0, 0.0);
 
     /* Transformation to setup the point of view on the scene */
-    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
-    view_9 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    proj_14 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
+    view_14 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 
     glUseProgram(texture_shader.Program);
     glUniformMatrix4fv(texture_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
-    glUniformMatrix4fv(texture_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(texture_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(texture_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     CheckGLErrors(__LINE__, __FILE__);
 
     glUseProgram(flat_shader.Program);
     glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &glm::mat4(1.0)[0][0]);
-    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0, 1.f);
     glUseProgram(0);
     CheckGLErrors(__LINE__, __FILE__);
@@ -206,9 +206,9 @@ int lez11_2(void) {
     matrix_stack stack;
 
     /* set the trackball position */
-    trackball[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    trackball[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    curr_tb_9 = 0;
+    trackballs[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    trackballs[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    curr_tb_14 = 0;
 
     /* define the viewport  */
     glViewport(0, 0, 1000, 800);
@@ -243,10 +243,10 @@ int lez11_2(void) {
         CheckGLErrors(__LINE__, __FILE__);
 
         /* light direction transformed by the trackball trackball[1]*/
-        glm::vec4 curr_Ldir = trackball[1].matrix() * Ldir_9;
+        glm::vec4 curr_Ldir = trackballs[1].matrix() * Ldir_14;
 
         stack.pushLastElement();
-        stack.multiply(trackball[0].matrix());
+        stack.multiply(trackballs[0].matrix());
 
         /* show the plane NumberOfIndices flat-wire (filled triangles plus triangle contours) */
         // step 1: render the edges
@@ -339,7 +339,7 @@ int lez11_2(void) {
         r_line.SetAsCurrentObjectToRender();
         glUseProgram(flat_shader.Program);
         stack.pushLastElement();
-        stack.multiply(trackball[1].matrix());
+        stack.multiply(trackballs[1].matrix());
 
         glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 

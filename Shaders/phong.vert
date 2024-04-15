@@ -17,10 +17,11 @@ uniform int uShadingMode;
 
 /* phong */
 vec3 phong (vec3 L, vec3 pos, vec3 N){
+    vec3 V = normalize(-pos);
     float LN = max(0.0, dot(L, N));
 
     vec3 R = -L+2*dot(L, N)*N;
-    float spec = max(0.0, pow(dot(normalize(-pos), R), 10));
+    float spec = max(0.0, pow(dot(V, R), 10));
 
     return LN*uDiffuseColor + spec * uDiffuseColor*vec3(0.2, 0.2, 0.8);
 }
@@ -32,24 +33,23 @@ void main(void)
     if (uDiffuseColor.x < 0) vColor = aColor;
     else
     {
-        vec3 NormalVS= normalize((uV*uT*vec4(aNormal, 0.0)).xyz);
-        vec3 LdirVS = (uV*uLdir).xyz;
-        vec3 posVS = (uV*uT*vec4(aPosition, 1.0)).xyz;
-
-        if (uShadingMode == 0)
+        if (uShadingMode == 0)// force color
         vColor = uDiffuseColor;
         else
-        if (uShadingMode == 1){
-            /* express normal, light direction and position in view space */
+        {
+            vec3 NormalVS= normalize((uV*uT*vec4(aNormal, 0.0)).xyz);
+            vec3 LdirVS = (uV*uLdir).xyz;
+            vec3 posVS = (uV*uT*vec4(aPosition, 1.0)).xyz;
 
-            /* compute the diffuse color  */
-            vColor = phong(LdirVS, posVS, NormalVS);
-        }
-        else
-        if (uShadingMode >= 2){
-            vNormalVS = NormalVS;
-            vLdirVS   = LdirVS;
-            vposVS    = posVS;
+            if (uShadingMode == 1){ // compute the diffuse color
+                /* express normal, light direction and position in view space */
+                vColor = phong(LdirVS, posVS, NormalVS);
+            }
+            else if (uShadingMode >= 2){
+                vNormalVS = NormalVS;
+                vLdirVS   = LdirVS;
+                vposVS    = posVS;
+            }
         }
     }
 

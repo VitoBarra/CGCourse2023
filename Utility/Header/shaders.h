@@ -11,7 +11,8 @@ public:
 
     std::map<std::string, int> ShaderUniformVariable;
 
-    Shader() {}
+    Shader() {
+    }
 
     Shader(const std::string *nameV, const std::string *nameF) {
         create_program(nameV->c_str(), nameF->c_str());
@@ -42,7 +43,6 @@ public:
     }
 
     void create_program(const GLchar *nameV, const GLchar *nameF) {
-
         std::string vs_src_code = textFileRead(nameV);
         std::string fs_src_code = textFileRead(nameF);
 
@@ -64,7 +64,7 @@ public:
     }
 
 
-    void SetAsCurrentProgram() const {
+    void LoadProgram() const {
         glUseProgram(Program);
     }
 
@@ -86,6 +86,7 @@ public:
         glUniformMatrix4fv((*this)[uniformName], 1, GL_FALSE, &matrix[0][0]);
     }
 
+
     void SetUniformVec3f(const char *uniformName, float a, float b, float c) {
         glUniform3f((*this)[uniformName], a, b, c);
     }
@@ -93,12 +94,31 @@ public:
     void SetUniformVec3f(const char *uniformName, float vec[3]) {
         glUniform3fv((*this)[uniformName], 1, &vec[0]);
     }
+    void SetUniformVec3f(const char *uniformName, glm::vec3 vec) {
+        glUniform3fv((*this)[uniformName], 1, &vec[0]);
+    }
+
+    void SetUniformVec4f(const char *uniformName, float a, float b, float c, float d) {
+        glUniform4f((*this)[uniformName], a, b, c, d);
+    }
+
+    void SetUniformVec4f(const char *uniformName, float vec[4]) {
+        glUniform4fv((*this)[uniformName], 1, &vec[0]);
+    }
+    void SetUniformVec4f(const char *uniformName, glm::vec4 vec) {
+        glUniform4fv((*this)[uniformName], 1, &vec[0]);
+    }
 
     void SetUniform1f(const char *uniformName, float value) {
         glUniform1f((*this)[uniformName], value);
     }
 
-private:
+    void SetUniform1i(const char *uniformName, int value) {
+        glUniform1i((*this)[uniformName], value);
+    }
+
+private
+:
     bool create_shader(const GLchar *src, unsigned int SHADER_TYPE) {
         GLuint s;
         switch (SHADER_TYPE) {
@@ -124,7 +144,6 @@ private:
     }
 
     void bind_uniform_variables(std::string code) {
-
         code.erase(std::remove(code.begin(), code.end(), '\n'), code.end());
         code.erase(std::remove(code.begin(), code.end(), '\t'), code.end());
         code.erase(std::remove(code.begin(), code.end(), '\b'), code.end());
@@ -150,7 +169,3 @@ private:
         }
     }
 };
-
-
-
- 

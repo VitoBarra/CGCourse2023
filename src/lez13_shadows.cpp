@@ -26,7 +26,7 @@ and set the path properly.
 #include <glm/gtc/matrix_access.hpp>
 
 /* light direction NumberOfIndices world space*/
-glm::vec4 Ldir_9;
+glm::vec4 Ldir_14;
 
 /* projector */
 float depth_bias;
@@ -59,16 +59,16 @@ projector Lproj;
 
 
 /* trackballs for controlloing the scene (0) or the light direction (1) */
-trackball trackball[2];
+trackball trackballs[2];
 
 /* which trackball is currently used */
-int curr_tb_9;
+int curr_tb_14;
 
 /* projection matrix*/
-glm::mat4 proj_9;
+glm::mat4 proj_14;
 
 /* view matrix */
-glm::mat4 view_9;
+glm::mat4 view_14;
 
 /* matrix stack*/
 matrix_stack stack;
@@ -88,8 +88,8 @@ view_manipulator view_man;
 /* callback function called when the mouse is moving */
 static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
     if (ImGui::GetIO().WantCaptureMouse) return;
-    if (curr_tb_9 < 2)
-        trackball[curr_tb_9].mouse_move(proj_9, view_9, xpos, ypos);
+    if (curr_tb_14 < 2)
+        trackballs[curr_tb_14].mouse_move(proj_14, view_14, xpos, ypos);
     else
         view_man.mouse_move(xpos, ypos);
 }
@@ -101,13 +101,13 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        if (curr_tb_9 < 2)
-            trackball[curr_tb_9].mouse_press(proj_9, view_9, xpos, ypos);
+        if (curr_tb_14 < 2)
+            trackballs[curr_tb_14].mouse_press(proj_14, view_14, xpos, ypos);
         else
             view_man.mouse_press(xpos, ypos);
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        if (curr_tb_9 < 2)
-            trackball[curr_tb_9].mouse_release();
+        if (curr_tb_14 < 2)
+            trackballs[curr_tb_14].mouse_release();
         else
             view_man.mouse_release();
     }
@@ -117,14 +117,14 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     if (ImGui::GetIO().WantCaptureMouse) return;
 
-    if (curr_tb_9 == 0)
-        trackball[0].mouse_scroll(xoffset, yoffset);
+    if (curr_tb_14 == 0)
+        trackballs[0].mouse_scroll(xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     /* every time any key is presse it switch from controlling trackball trackball[0] to trackball[1] and viceversa */
     if (action == GLFW_PRESS)
-        curr_tb_9 = 1 - curr_tb_9;
+        curr_tb_14 = 1 - curr_tb_14;
 
 }
 
@@ -167,7 +167,7 @@ void gui_setup() {
             }
         if (ImGui::SliderFloat("distance", &distance_light, 2.f, 100.f))
             Lproj.set_projection(glm::lookAt(glm::vec3(0, distance_light, 0.f), glm::vec3(0.f, 0.f, 0.f),
-                                             glm::vec3(0.f, 0.f, -1.f)) * inverse(trackball[1].matrix()), box3(1.0));
+                                             glm::vec3(0.f, 0.f, -1.f)) * inverse(trackballs[1].matrix()), box3(1.0));
         ImGui::SliderFloat("  plane approx", &k_plane_approx, 0.0, 1.0);
         if (redo_fbo) {
             fbo.remove();
@@ -181,9 +181,9 @@ void gui_setup() {
     }
 
     if (ImGui::BeginMenu("Trackball")) {
-        if (ImGui::Selectable("control scene", curr_tb_9 == 0)) curr_tb_9 = 0;
-        if (ImGui::Selectable("control light", curr_tb_9 == 1)) curr_tb_9 = 1;
-        if (ImGui::Selectable("control view", curr_tb_9 == 2)) curr_tb_9 = 2;
+        if (ImGui::Selectable("control scene", curr_tb_14 == 0)) curr_tb_14 = 0;
+        if (ImGui::Selectable("control light", curr_tb_14 == 1)) curr_tb_14 = 1;
+        if (ImGui::Selectable("control view", curr_tb_14 == 2)) curr_tb_14 = 2;
 
         ImGui::EndMenu();
     }
@@ -290,7 +290,7 @@ void blur_texture(GLint tex_id, Renderable r_quad) {
     CheckGLErrors(__LINE__, __FILE__, true);
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo_blur.id_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_blur.id_tex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_blur.id_texture, 0);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     glUseProgram(blur_shader.Program);
     glUniform2f(blur_shader["uBlur"], 0.0, 1.f / fbo_blur.h);
@@ -300,7 +300,7 @@ void blur_texture(GLint tex_id, Renderable r_quad) {
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    glBindTexture(GL_TEXTURE_2D, fbo_blur.id_tex);
+    glBindTexture(GL_TEXTURE_2D, fbo_blur.id_texture);
     glUniform2f(blur_shader["uBlur"], 1.f / fbo_blur.w, 0.0);
     draw_full_screen_quad(r_quad);
     CheckGLErrors(__LINE__, __FILE__, true);
@@ -373,13 +373,13 @@ int lez13(void) {
     Renderable r_plane;
     shape s_plane;
     shape_maker::rectangle(s_plane, 1, 1);
-    s_plane.to_renderable(r_plane);
+    s_plane.ToRenderable(r_plane);
 
     /* create a torus */
     Renderable r_torus;
     shape s_torus;
     shape_maker::torus(s_torus, 0.5, 2.0, 50, 50);
-    s_torus.to_renderable(r_torus);
+    s_torus.ToRenderable(r_torus);
     CheckGLErrors(__LINE__, __FILE__, true);
 
     /* create a cube */
@@ -387,7 +387,7 @@ int lez13(void) {
     shape s_cube;
     shape_maker::cube(s_cube);
     s_cube.compute_edge_indices_from_indices();
-    s_cube.to_renderable(r_cube);
+    s_cube.ToRenderable(r_cube);
 
     /* create a sphere */
     auto r_sphere = shape_maker::sphere();
@@ -397,7 +397,7 @@ int lez13(void) {
     auto r_quad = shape_maker::quad();
 
     /* initial light direction */
-    Ldir_9 = glm::vec4(0.0, 1.0, 0.0, 0.0);
+    Ldir_14 = glm::vec4(0.0, 1.0, 0.0, 0.0);
 
     /* light projection */
     Lproj.sm_size_x = 512;
@@ -410,8 +410,8 @@ int lez13(void) {
                                     glm::vec3(0.f, 0.f, -1.f));
 
     /* Transformation to setup the point of view on the scene */
-    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 100.f);
-    view_9 = glm::lookAt(glm::vec3(0, 3, 4.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    proj_14 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 100.f);
+    view_14 = glm::lookAt(glm::vec3(0, 3, 4.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 
     glUseProgram(depth_shader.Program);
     glUniformMatrix4fv(depth_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
@@ -420,8 +420,8 @@ int lez13(void) {
     CheckGLErrors(__LINE__, __FILE__, true);
 
     glUseProgram(shadow_shader.Program);
-    glUniformMatrix4fv(shadow_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(shadow_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(shadow_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(shadow_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     glUniformMatrix4fv(shadow_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
     glUniform1i(shadow_shader["uShadowMap"], 0);
     glUniform2i(shadow_shader["uShadowMapSize"], Lproj.sm_size_x, Lproj.sm_size_y);
@@ -429,8 +429,8 @@ int lez13(void) {
     CheckGLErrors(__LINE__, __FILE__, true);
 
     glUseProgram(flat_shader.Program);
-    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     glUniform3f(flat_shader["uColor"], 1.0, 1.0, 1.0);
     glUseProgram(0);
     glEnable(GL_DEPTH_TEST);
@@ -439,10 +439,10 @@ int lez13(void) {
     print_info();
 
     /* set the trackball position */
-    trackball[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    trackball[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    trackballs[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
+    trackballs[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
     view_man.reset();
-    curr_tb_9 = 0;
+    curr_tb_14 = 0;
 
     /* define the viewport  */
     glViewport(0, 0, 1000, 800);
@@ -463,15 +463,15 @@ int lez13(void) {
         ImGui::NewFrame();
         gui_setup();
 
-        Ldir_9 = glm::vec4(0.f, 1.f, 0.f, 0.f);
+        Ldir_14 = glm::vec4(0.f, 1.f, 0.f, 0.f);
         /* rotate the view accordingly to view_rot*/
-        glm::mat4 curr_view = view_man.apply_to_view(view_9);
+        glm::mat4 curr_view = view_man.apply_to_view(view_14);
 
         /* light direction transformed by the trackball trackball[1]*/
-        glm::vec4 curr_Ldir = trackball[1].matrix() * Ldir_9;
+        glm::vec4 curr_Ldir = trackballs[1].matrix() * Ldir_14;
 
         stack.pushLastElement();
-        stack.multiply(trackball[0].matrix());
+        stack.multiply(trackballs[0].matrix());
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo.id_fbo);
         glViewport(0, 0, Lproj.sm_size_x, Lproj.sm_size_y);
@@ -481,7 +481,7 @@ int lez13(void) {
 
         Lproj.view_matrix =
                 glm::lookAt(glm::vec3(0, distance_light, 0.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, -1.f)) *
-                inverse(trackball[1].matrix());
+                inverse(trackballs[1].matrix());
         Lproj.set_projection(Lproj.view_matrix, box3(2.0));
 
         glUniformMatrix4fv(depth_shader["uLightMatrix"], 1, GL_FALSE, &Lproj.light_matrix()[0][0]);
@@ -500,7 +500,7 @@ int lez13(void) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         if (selected_mode == 6) {
-            blur_texture(fbo.id_tex, r_quad);
+            blur_texture(fbo.id_texture, r_quad);
         }
 
         glViewport(0, 0, 1000, 800);
@@ -513,7 +513,7 @@ int lez13(void) {
         glUniform2i(shadow_shader["uShadowMapSize"], Lproj.sm_size_x, Lproj.sm_size_y);
         glUniform1i(shadow_shader["uRenderMode"], selected_mode);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, fbo.id_tex);
+        glBindTexture(GL_TEXTURE_2D, fbo.id_texture);
 
         draw_scene(shadow_shader, r_plane, r_torus, r_cube);
 
@@ -543,7 +543,7 @@ int lez13(void) {
 
         // render the light direction
         stack.pushLastElement();
-        stack.multiply(trackball[1].matrix());
+        stack.multiply(trackballs[1].matrix());
 
         glUseProgram(flat_shader.Program);
         glUniformMatrix4fv(flat_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);

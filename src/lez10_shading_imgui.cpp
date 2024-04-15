@@ -32,7 +32,8 @@ glm::mat4 proj_10;
 glm::mat4 view_10;
 
 
-void draw_line_10(glm::vec4 l) {
+void draw_line_10(glm::vec4 l)
+{
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
     glVertex3f(0.0, 0.0, 0.0);
@@ -41,39 +42,48 @@ void draw_line_10(glm::vec4 l) {
 }
 
 /* callback function called when the mouse is moving */
-static void cursor_position_callback_10(GLFWwindow *window, double xpos, double ypos) {
+static void cursor_position_callback_10(GLFWwindow *window, double xpos, double ypos)
+{
     trackball_10[curr_tb_10].mouse_move(proj_10, view_10, xpos, ypos);
 }
 
 /* callback function called when a mouse button is pressed */
-void mouse_button_callback_10(GLFWwindow *window, int button, int action, int mods) {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+void mouse_button_callback_10(GLFWwindow *window, int button, int action, int mods)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         trackball_10[curr_tb_10].mouse_press(proj_10, view_10, xpos, ypos);
-    } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+    {
         trackball_10[curr_tb_10].mouse_release();
     }
 }
 
 /* callback function called when a mouse wheel is rotated */
-void scroll_callback_10(GLFWwindow *window, double xoffset, double yoffset) {
+void scroll_callback_10(GLFWwindow *window, double xoffset, double yoffset)
+{
     if (curr_tb_10 == 0)
         trackball_10[0].mouse_scroll(xoffset, yoffset);
 }
 
-void key_callback_10(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void key_callback_10(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
     /* every time any key is presse it switch from controlling trackball trackball_10[0] to trackball_10[1] and viceversa */
     if (action == GLFW_PRESS)
         curr_tb_10 = 1 - curr_tb_10;
 }
 
-void print_info_10() {
+void print_info_10()
+{
     std::cout << "press left mouse button to control the trackball\n";
     std::cout << "press any key to switch between world and light control\n";
 }
 
-int lez10(void) {
+int lez10(void)
+{
     GLFWwindow *window;
 
     /* Initialize the library */
@@ -82,7 +92,8 @@ int lez10(void) {
 
     /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(1000, 800, "code_10_shading_gui", nullptr, nullptr);
-    if (!window) {
+    if (!window)
+    {
         glfwTerminate();
         return -1;
     }
@@ -130,7 +141,7 @@ int lez10(void) {
     validate_shader_program(phong_shader.Program);
 
     Shader flat_shader;
-    flat_shader.create_program(shaders_path + "phong.vert", shaders_path + "FlatColor.frag");
+    flat_shader.create_program(shaders_path + "phong.vert", shaders_path + "flatAlpha.frag");
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -171,13 +182,13 @@ int lez10(void) {
     shape s_plane;
     shape_maker::rectangle(s_plane, 10, 10);
     s_plane.compute_edge_indices_from_indices();
-    s_plane.to_renderable(r_plane);
+    s_plane.ToRenderable(r_plane);
 
     /* load from file */
     std::vector<Renderable> r_cb;
-    load_obj(r_cb, "../Models/Datsun_280Z","datsun_280Z.obj");
+    load_obj(r_cb, "../Models/Datsun_280Z", "datsun_280Z.obj");
 
-//	load_obj(r_cb, "sh_catWorkBoot.obj");
+    //	load_obj(r_cb, "sh_catWorkBoot.obj");
     //load_obj(r_cb, "sphere.obj");
 
     /* initial light direction */
@@ -221,7 +232,8 @@ int lez10(void) {
     float slope = 1.0;
     float eta_2 = 1.0;
     /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         /* Render here */
         glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -304,7 +316,8 @@ int lez10(void) {
         /*render the loaded object.
         The object is made of several meshes (== objbects of type "Renderable")
         */
-        if (!r_cb.empty()) {
+        if (!r_cb.empty())
+        {
             stack.pushLastElement();
 
             /*scale the object using the diagonal of the bounding box of the vertices position.
@@ -314,7 +327,8 @@ int lez10(void) {
 
             glUniformMatrix4fv(phong_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 
-            for (auto &is: r_cb) {
+            for (auto &is: r_cb)
+            {
                 is.SetAsCurrentObjectToRender();
                 /* every Renderable object has its own material. Here just the diffuse color is used.
                 ADD HERE CODE TO PASS OTHE MATERIAL PARAMETERS.
@@ -323,7 +337,7 @@ int lez10(void) {
                 glUniform3fv(phong_shader["uSpecularColor"], 1, &is.material.specular[0]);
                 glUniform3fv(phong_shader["uAmbientColor"], 1, &is.material.ambient[0]);
                 glUniform3fv(phong_shader["uEmissiveColor"], 1, &is.material.emission[0]);
-                glUniform1f(phong_shader["uRefractionIndex"], is.material.ior);
+                glUniform1f(phong_shader["uRefractionIndex"], is.material.RefractionIndex);
                 glUniform1f(phong_shader["uShininess"], is.material.shininess);
 
                 glDrawElements(is.elements[0].element_type, is.elements[0].vertexCount, GL_UNSIGNED_INT, 0);

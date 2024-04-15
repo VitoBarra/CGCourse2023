@@ -32,8 +32,8 @@ int FunnyShape() {
     auto r = Draw2D_FunnyShape();
     r->SetAsCurrentObjectToRender();
 
-    Shader *program_shader = Shader::CreateShaderFromFile("../src/Shaders/PositionSinFun.vert",
-                                                          "../src/Shaders/ColorWithAlpha.frag");
+    Shader *program_shader = Shader::CreateShaderFromFile("../Shaders/PositionSinFun.vert",
+                                                          "../Shaders/ColorWithAlpha.frag");
     program_shader->RegisterUniformVariable("uDelta");
 
     int it = 0;

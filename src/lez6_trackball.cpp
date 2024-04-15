@@ -21,10 +21,10 @@ and set the path properly.
 
 
 /* projection matrix*/
-glm::mat4 proj_9;
+glm::mat4 proj_14;
 
 /* view matrix and view_frame*/
-glm::mat4 view_9, view_frame;
+glm::mat4 view_14, view_frame;
 
 /* a bool variable that indicates if we are currently rotating the trackball*/
 bool is_trackball_dragged;
@@ -199,7 +199,7 @@ int lez6(void) {
     shape s_sphere;
     shape_maker::sphere(s_sphere);
     s_sphere.compute_edge_indices_from_indices();
-    s_sphere.to_renderable(r_sphere);
+    s_sphere.ToRenderable(r_sphere);
 
     /* create 3 lines showing the reference frame*/
     Renderable r_frame = shape_maker::frame(4.0);
@@ -208,9 +208,9 @@ int lez6(void) {
     CheckGLErrors(__LINE__, __FILE__);
 
     /* Transformation to setup the point of view on the scene */
-    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
-    view_9 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-    view_frame = glm::inverse(view_9);
+    proj_14 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
+    view_14 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    view_frame = glm::inverse(view_14);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -227,8 +227,8 @@ int lez6(void) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(basic_shader.Program);
-        glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-        glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+        glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+        glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
         CheckGLErrors(__LINE__, __FILE__);
 
         stack.pushLastElement();

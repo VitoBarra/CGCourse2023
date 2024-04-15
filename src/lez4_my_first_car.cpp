@@ -48,7 +48,7 @@ int lez4(void) {
 
     Shader basic_shader;
     std::string vertex_shader = "../Shaders/";
-    basic_shader.create_program(vertex_shader + "BasicNoPass.vert", vertex_shader + "flat.frag");
+    basic_shader.create_program(vertex_shader + "Basic.vert", vertex_shader + "flat.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");

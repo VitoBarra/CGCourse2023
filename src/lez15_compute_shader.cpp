@@ -32,16 +32,16 @@ and set the path properly.
 #include <glm/gtx/string_cast.hpp>
 
 /* light direction NumberOfIndices world space*/
-glm::vec4 Ldir_9;
+glm::vec4 Ldir_15;
 
-trackball trackball[2];
-int curr_tb_9;
+trackball trackballs[2];
+int curr_tb_15;
 
 /* projection matrix*/
-glm::mat4 proj_9;
+glm::mat4 proj_15;
 
 /* view matrix */
-glm::mat4 view_9;
+glm::mat4 view_15;
 
 
 /* Program Shaders used */
@@ -60,7 +60,7 @@ void draw_line(glm::vec4 l) {
 
 /* callback function called when the mouse is moving */
 static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
-    trackball[curr_tb_9].mouse_move(proj_9, view_9, xpos, ypos);
+    trackballs[curr_tb_15].mouse_move(proj_15, view_15, xpos, ypos);
 }
 
 /* callback function called when a mouse button is pressed */
@@ -68,22 +68,22 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        trackball[curr_tb_9].mouse_press(proj_9, view_9, xpos, ypos);
+        trackballs[curr_tb_15].mouse_press(proj_15, view_15, xpos, ypos);
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        trackball[curr_tb_9].mouse_release();
+        trackballs[curr_tb_15].mouse_release();
     }
 }
 
 /* callback function called when a mouse wheel is rotated */
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-    if (curr_tb_9 == 0)
-        trackball[0].mouse_scroll(xoffset, yoffset);
+    if (curr_tb_15 == 0)
+        trackballs[0].mouse_scroll(xoffset, yoffset);
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     /* every time any key is presse it switch from controlling trackball trackball[0] to trackball[1] and viceversa */
     if (action == GLFW_PRESS)
-        curr_tb_9 = 1 - curr_tb_9;
+        curr_tb_15 = 1 - curr_tb_15;
 
 }
 
@@ -242,7 +242,7 @@ int lez15(std::string name) {
     shape s_plane;
     Renderable r_plane;
     shape_maker::rectangle(s_plane, 10, 10);
-    s_plane.to_renderable(r_plane);
+    s_plane.ToRenderable(r_plane);
 
 
     print_info();

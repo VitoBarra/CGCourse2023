@@ -28,7 +28,7 @@ int MyCar()
     glEnable(GL_DEPTH_TEST);
 
 
-    Shader shader = *Shader::CreateShaderFromFile("../src/Shaders/BasicNoPass.vert", "../src/Shaders/flat.frag");
+    Shader shader = *Shader::CreateShaderFromFile("../Shaders/Basic.vert", "../Shaders/flat.frag");
     shader.RegisterUniformVariable("uP"); //View->Projection (NDC)
     shader.RegisterUniformVariable("uV"); //Word->View
     shader.RegisterUniformVariable("uT"); //Transformation
@@ -40,7 +40,7 @@ int MyCar()
     auto viewMatrix = glm::lookAt(glm::vec3(0, 5, 10.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
 
     /* Set shader matrix */
-    shader.SetAsCurrentProgram();
+    shader.LoadProgram();
     glUniformMatrix4fv(shader["uT"], 1, GL_FALSE, &identityMatrix[0][0]);
     glUniformMatrix4fv(shader["uV"], 1, GL_FALSE, &viewMatrix[0][0]);
     glUniformMatrix4fv(shader["uP"], 1, GL_FALSE, &perspectiveProjection[0][0]);
@@ -93,7 +93,7 @@ int MyCar()
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.SetAsCurrentProgram();
+        shader.LoadProgram();
 
         glUniformMatrix4fv(shader["uV"], 1, GL_FALSE, &(viewMatrix)[0][0]);
 

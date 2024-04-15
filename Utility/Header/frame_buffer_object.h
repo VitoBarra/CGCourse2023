@@ -8,7 +8,7 @@
 struct frame_buffer_object {
 
 	int w, h;
-	GLuint id_fbo, id_tex,id_tex1, id_depth;
+	GLuint id_fbo, id_texture,id_tex1, id_depth;
 	bool use_texture_for_depth;
 
 	void check(int fboStatus)
@@ -37,8 +37,8 @@ struct frame_buffer_object {
 		glBindFramebuffer(GL_FRAMEBUFFER, this->id_fbo);
 
 		/* texture for color attachment*/
-		glGenTextures(1, &this->id_tex);
-		glBindTexture(GL_TEXTURE_2D, this->id_tex);
+		glGenTextures(1, &this->id_texture);
+		glBindTexture(GL_TEXTURE_2D, this->id_texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -46,7 +46,7 @@ struct frame_buffer_object {
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->id_tex, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->id_texture, 0);
 
 		/* texture for color attachment 1*/
 		glGenTextures(1, &this->id_tex1);

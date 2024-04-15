@@ -70,7 +70,7 @@ struct material {
     float transmittance[3];
     float emission[3];
     float shininess;
-    float ior;       // index of refraction
+    float RefractionIndex;       // index of refraction
     float dissolve;  // 1 == opaque; 0 == fully transparent
 
     texture ambient_texture, diffuse_texture, specular_texture;
@@ -109,7 +109,7 @@ public:
     unsigned int elem_type;
 
     // number of vertices
-    unsigned int NumberOfVertices;
+    GLsizei NumberOfVertices;
 
     // number of indices
     GLsizei NumberOfIndices;
@@ -276,6 +276,15 @@ public:
 
     void RenderTriangles() {
         glDrawElements(GL_TRIANGLES, NumberOfIndices, GL_UNSIGNED_INT, nullptr);
+    }
+    void RenderLine() {
+        glDrawArrays(GL_LINES, 0, NumberOfVertices);
+    }
+
+    void RenderWired()
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements[1].ind);
+        glDrawElements(GL_LINES, elements[1].vertexCount, GL_UNSIGNED_INT, nullptr);
     }
 
 

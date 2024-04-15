@@ -15,10 +15,10 @@ and set the path properly.
 
 
 /* projection matrix*/
-glm::mat4 proj_9;
+glm::mat4 proj_14;
 
 /* view matrix and view_frame*/
-glm::mat4 view_9, view_frame;
+glm::mat4 view_14, view_frame;
 
 /* a bool variable that indicates if we are currently rotating the trackball*/
 bool is_trackball_dragged;
@@ -118,7 +118,7 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 
         float depthvalue;
         glReadPixels(xpos, 800 - ypos, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depthvalue);
-        glm::vec3 hit = glm::unProject(glm::vec3(xpos, 800 - ypos, depthvalue), view_9, proj_9, glm::vec4(0, 0, 1000, 800));
+        glm::vec3 hit = glm::unProject(glm::vec3(xpos, 800 - ypos, depthvalue), view_14, proj_14, glm::vec4(0, 0, 1000, 800));
         std::cout << " hit point " << glm::to_string(hit) << std::endl;
 
         GLfloat col[4];
@@ -178,7 +178,7 @@ int lez7(void) {
     validate_shader_program(basic_shader.Program);
 
     Shader flat_shader;
-    flat_shader.create_program(vertex_shader + "Basic.vert", vertex_shader + "FlatColor.frag");
+    flat_shader.create_program(vertex_shader + "Basic.vert", vertex_shader + "flatAlpha.frag");
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -204,28 +204,28 @@ int lez7(void) {
     shape s_sphere;
     shape_maker::sphere(s_sphere);
     s_sphere.compute_edge_indices_from_indices();
-    s_sphere.to_renderable(r_sphere);
+    s_sphere.ToRenderable(r_sphere);
 
     /* create 3 lines showing the reference frame*/
     auto r_frame = shape_maker::frame(4.0);
 
     /* crete a rectangle*/
-    auto r_plane = shape_maker::rectangle(1, 1);
+    auto r_plane = shape_maker::Rectangle(1, 1);
 
 
     /* Transformation to setup the point of view on the scene */
-    proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
-    view_9 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
-    view_frame = glm::inverse(view_9);
+    proj_14 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
+    view_14 = glm::lookAt(glm::vec3(0, 6, 8.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+    view_frame = glm::inverse(view_14);
 
     glUseProgram(basic_shader.Program);
-    glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(basic_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(basic_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     glUseProgram(0);
 
     glUseProgram(flat_shader.Program);
-    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_9[0][0]);
-    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_9[0][0]);
+    glUniformMatrix4fv(flat_shader["uP"], 1, GL_FALSE, &proj_14[0][0]);
+    glUniformMatrix4fv(flat_shader["uV"], 1, GL_FALSE, &view_14[0][0]);
     glUniform4f(flat_shader["uColor"], 1.0, 1.0, 1.0, 1.f);
     glUseProgram(0);
     glEnable(GL_DEPTH_TEST);

@@ -25,7 +25,7 @@ and set the path properly.
 #include <glm/gtx/string_cast.hpp>
 
 /* light direction NumberOfIndices world space*/
-glm::vec4 Ldir_9;
+glm::vec4 Ldir_14;
 
 trackball trackball_9[2];
 int curr_tb_9;
@@ -80,7 +80,7 @@ void print_info_9() {
     std::cout << "press any key to switch between world and light control\n";
 }
 
-int lez9(void) {
+int lez9() {
     GLFWwindow *window;
 
     /* Initialize the library */
@@ -126,7 +126,7 @@ int lez9(void) {
 
     Shader flat_shader;
     flat_shader.create_program(shaders_path + "DiffusiveColor.vert",
-                               shaders_path + "FlatColor.frag");
+                               shaders_path + "flatAlpha.frag");
     flat_shader.RegisterUniformVariable("uP");
     flat_shader.RegisterUniformVariable("uV");
     flat_shader.RegisterUniformVariable("uT");
@@ -167,7 +167,7 @@ int lez9(void) {
     shape s_plane;
     shape_maker::rectangle(s_plane, 10, 10);
     s_plane.compute_edge_indices_from_indices();
-    s_plane.to_renderable(r_plane);
+    s_plane.ToRenderable(r_plane);
 
     /* load from file */
     std::vector<Renderable> r_cb;
@@ -175,7 +175,7 @@ int lez9(void) {
 
 
     /* initial light direction */
-    Ldir_9 = glm::vec4(0.0, 1.0, 0.0, 0.0);
+    Ldir_14 = glm::vec4(0.0, 1.0, 0.0, 0.0);
 
     /* Transformation to setup the point of view on the scene */
     proj_9 = glm::frustum(-1.f, 1.f, -0.8f, 0.8f, 2.f, 20.f);
@@ -213,7 +213,7 @@ int lez9(void) {
     // glEnable(GL_CULL_FACE);
 
     /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window)) {
+    while (glfwWindowShouldClose(window) == 0) {
         /* Render here */
         glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -221,7 +221,7 @@ int lez9(void) {
         CheckGLErrors(__LINE__, __FILE__);
 
         /* light direction transformed by the trackball trackball[1]*/
-        glm::vec4 curr_Ldir = trackball_9[1].matrix() * Ldir_9;
+        glm::vec4 curr_Ldir = trackball_9[1].matrix() * Ldir_14;
 
         stack.pushLastElement();
         stack.multiply(trackball_9[0].matrix());
@@ -288,14 +288,14 @@ int lez9(void) {
 
             glUniformMatrix4fv(diffuse_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
 
-            for (unsigned int is = 0; is < r_cb.size(); is++) {
-                r_cb[is].SetAsCurrentObjectToRender();
+            for (auto & is : r_cb) {
+                is.SetAsCurrentObjectToRender();
                 /* every Renderable object has its own material. Here just the diffuse color is used.
                 ADD HERE CODE TO PASS OTHE MATERIAL PARAMETERS.
                 */
-                glUniform3fv(diffuse_shader["uDiffuseColor"], 1, &r_cb[is].material.diffuse[0]);
+                glUniform3fv(diffuse_shader["uDiffuseColor"], 1, &is.material.diffuse[0]);
 
-                glDrawElements(r_cb[is].elements[0].element_type, r_cb[is].elements[0].vertexCount, GL_UNSIGNED_INT, 0);
+                glDrawElements(is.elements[0].element_type, is.elements[0].vertexCount, GL_UNSIGNED_INT, 0);
             }
             stack.pop();
             glUseProgram(0);

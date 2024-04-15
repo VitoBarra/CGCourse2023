@@ -49,7 +49,7 @@ int lez5(void) {
 
     std::string vertex_shader = "../Shaders/";
     Shader basic_shader;
-    basic_shader.create_program(vertex_shader + "BasicNoPass.vert", vertex_shader + "flat.frag");
+    basic_shader.create_program(vertex_shader + "Basics.vert", vertex_shader + "flat.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
     basic_shader.RegisterUniformVariable("uT");
@@ -70,7 +70,7 @@ int lez5(void) {
     Renderable r_cyl = shape_maker::cylinder(30, 0.2, 0.1, 0.5);
 
     /* create a plane*/
-    Renderable r_plane = shape_maker::rectangle(1, 1);
+    Renderable r_plane = shape_maker::Rectangle(1, 1);
 
     /* create 3 lines showing the reference frame*/
     Renderable r_frame = shape_maker::frame(4.0);
