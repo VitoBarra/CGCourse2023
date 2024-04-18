@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include "debugging.h"
 #include "simple_shapes.h"
 #include "shaders.h"
 

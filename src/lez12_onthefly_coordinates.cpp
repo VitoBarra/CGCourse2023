@@ -24,12 +24,12 @@ and set the path properly.
 
 
 /* projector */
-struct projector {
+struct ShadowMap {
     glm::mat4 view, proj;
     texture tex;
 };
 
-projector Lproj;
+ShadowMap Lproj;
 
 
 /* trackballs for controlloing the scene (0) or the light direction (1) */
@@ -132,7 +132,7 @@ void load_textures()
     reflection_map.create_cubemap(2048, 2048, 3);
 }
 
-void gui_setup()
+void gui()
 {
     ImGui::BeginMainMenuBar();
 
@@ -387,7 +387,7 @@ int lez12()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        gui_setup();
+        gui();
 
         /* rotate the view accordingly to view_rot*/
         /* Exc: find a simpler series of operations to define curr_view*/

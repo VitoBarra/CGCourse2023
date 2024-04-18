@@ -1,4 +1,4 @@
-#version 330 core 
+#version 330 core
 layout (location = 0) in vec3 aPosition;
 layout (location = 2) in vec3 aNormal;
 
@@ -7,10 +7,16 @@ out vec3 vNormalWS;
 out vec3 vVWS;
 out vec3 vLWS;
 
+/*Phong*/
+out vec3 vNormalVS;
+out vec3 vLdirVS;
+out vec3 vposVS;
+
 uniform mat4 uP;
 uniform mat4 uV;
 uniform mat4 uT;
 uniform mat4 uLightMatrix;
+uniform vec4 uLdir;
 
 uniform int uRenderMode;
 
@@ -18,6 +24,10 @@ void main(void)
 {
     gl_Position = uP*uV*uT*vec4(aPosition, 1.0);
 
+
+    /*Shadow Map*/
+
+    //normals in world space
     vNormalWS = normalize((inverse(transpose(uT))*vec4(aNormal, 0.0)).xyz);
     vVWS = (inverse(uV)*(vec4(0.0, 0.0, 0.0, 1.0)-uV*uT*vec4(aPosition, 1.0))).xyz;
 
@@ -33,6 +43,13 @@ void main(void)
     vec4 nWS = inverse(uLightMatrix)*n;
     nWS/=nWS.w;
 
+    //light direction in world space
     vLWS = normalize((nWS-fWS).xyz);
 
+
+    /*Phong*/
+
+    vNormalVS=normalize((uV*uT*vec4(aNormal, 0.0)).xyz);
+    vLdirVS  =(uV*uLdir).xyz;
+    vposVS   =(uV*uT*vec4(aPosition, 1.0)).xyz;
 }

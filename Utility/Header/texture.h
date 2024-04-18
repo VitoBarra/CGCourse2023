@@ -1,8 +1,8 @@
 #pragma once
+#include <cassert>
 
-#include <GL/glew.h>
-#include <string>
 #include <stb_image.h>
+#include <GL/glew.h>
 
 struct texture {
     texture() {}

@@ -1,6 +1,8 @@
 #version 330 core  
 out vec4 color;
+
 in vec3 vColor;
+
 in vec3 vNormalVS;
 in vec3 vLdirVS;
 in vec3 vposVS;

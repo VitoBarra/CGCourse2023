@@ -1,9 +1,9 @@
 #pragma once
-
+#include <iostream>
+#include <texture.h>
 #include <vector>
 #include <glm/glm.hpp>
-#include "texture.h"
-#include <iostream>
+
 
 struct box3 {
     /// min coordinate point
@@ -286,7 +286,5 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements[1].ind);
         glDrawElements(GL_LINES, elements[1].vertexCount, GL_UNSIGNED_INT, nullptr);
     }
-
-
 
 };

@@ -3,6 +3,7 @@
 #include <glm/ext.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include "simple_shapes.h"
+#include "debugging.h"
 #include "shaders.h"
 #include "matrix_stack.h"
 

@@ -85,7 +85,7 @@ void load_textures() {
 
 int selected_mesh = 0;
 
-void gui_setup() {
+void gui() {
     ImGui::BeginMainMenuBar();
     if (ImGui::BeginMenu("Models")) {
         if (ImGui::Selectable("plane", selected_mesh == 0)) selected_mesh = 0;
@@ -271,7 +271,7 @@ int lez11_1(void) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        gui_setup();
+        gui();
 
         /* light direction transformed by the trackball trackball[1]*/
         glm::vec4 curr_Ldir = trackballs[1].matrix() * Ldir;

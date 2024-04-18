@@ -1,7 +1,6 @@
 #version 330 core  
 out vec4 color; 
 
-uniform int uRenderMode;
 uniform float uPlaneApprox;
 
 // this produce the Hue for v:0..1 (for debug purposes)

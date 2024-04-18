@@ -65,7 +65,7 @@ Shader ao_shader, g_buffer_shader, final_shader, flat_shader, fsq_shader, blur_s
 /* implementation of view controller */
 
 /* azimuthal and elevation angle*/
-view_manipulator view_man;
+view_manipulator viewManipulator;
 
 
 /* callback function called when the mouse is moving */
@@ -74,7 +74,7 @@ static void cursor_position_callback(GLFWwindow *window, double xpos, double ypo
     if (curr_tb_14 < 2)
         trackballs[curr_tb_14].mouse_move(proj_14, view_14, xpos, ypos);
     else
-        view_man.mouse_move(xpos, ypos);
+        viewManipulator.mouse_move(xpos, ypos);
 }
 
 /* callback function called when a mouse button is pressed */
@@ -87,12 +87,12 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
         if (curr_tb_14 < 2)
             trackballs[curr_tb_14].mouse_press(proj_14, view_14, xpos, ypos);
         else
-            view_man.mouse_press(xpos, ypos);
+            viewManipulator.mouse_press(xpos, ypos);
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
         if (curr_tb_14 < 2)
             trackballs[curr_tb_14].mouse_release();
         else
-            view_man.mouse_release();
+            viewManipulator.mouse_release();
     }
 }
 
@@ -118,7 +118,7 @@ void print_info() {
 static bool use_ao = 0;
 static int fps;
 
-void gui_setup() {
+void gui() {
     ImGui::BeginMainMenuBar();
 
     ImGui::Text((std::string("FPS: ") + std::to_string(fps)).c_str());
@@ -365,7 +365,7 @@ int lez14(void) {
     /* set the trackball position */
     trackballs[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
     trackballs[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    view_man.reset();
+    viewManipulator.reset();
     curr_tb_14 = 0;
 
     /* define the viewport  */
@@ -399,10 +399,10 @@ int lez14(void) {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        gui_setup();
+        gui();
 
         /* rotate the view accordingly to view_rot*/
-        glm::mat4 curr_view = view_man.apply_to_view(view_14);
+        glm::mat4 curr_view = viewManipulator.apply_to_view(view_14);
 
         /* light direction transformed by the trackball trackball[1]*/
         glm::vec4 curr_Ldir = trackballs[1].matrix() * Ldir_14;

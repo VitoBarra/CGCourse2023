@@ -42,7 +42,6 @@ void main(void)
         }
         else
         if (uShadingMode == 1){
-            phong_lighting(LdirVS, posVS, NormalVS);
             vColor = phong_lighting(LdirVS, posVS, NormalVS);
         }
         else

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GL/glew.h>
+//#include <GL/glew.h>
 #include <iostream>
 
 
@@ -15,7 +15,7 @@ struct frame_buffer_object {
 	{
 		switch (fboStatus) {
 		case GL_FRAMEBUFFER_COMPLETE:break;
-		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:          std::cout<<"FBO Incomplete: Attachment\n"; break;
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:          std::cout<< "FBO Incomplete: Attachment\n"; break;
 		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:  std::cout << "FBO Incomplete: Missing Attachment\n"; break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:      std::cout << "FBO Incomplete: Dimensions\n"; break;
 		case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:         std::cout << "FBO Incomplete: Formats\n"; break;
@@ -25,6 +25,7 @@ struct frame_buffer_object {
 		default:                                            std::cout << "Undefined FBO error\n"; break;
 		}
 	}
+
 
 
 	void create(int w_, int h_,bool _use_texture_for_depth = false)
