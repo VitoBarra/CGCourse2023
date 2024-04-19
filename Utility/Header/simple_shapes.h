@@ -22,13 +22,15 @@ public:
 
     unsigned int VertexNumber, fn;
 
-    Renderable ToRenderable() {
+    Renderable ToRenderable()
+    {
         Renderable render = *new Renderable();
         ToRenderable(render);
         return render;
     }
 
-    void ToRenderable(Renderable &r) {
+    void ToRenderable(Renderable &r)
+    {
         r.create();
         r.NumberOfVertices = VertexNumber;
         r.AddVertexAttribute<float>(&positions[0], 3 * VertexNumber, 0, 3);
@@ -47,19 +49,23 @@ public:
     }
 
 private:
-    float cross(glm::vec2 a, glm::vec2 b) {
+    float cross(glm::vec2 a, glm::vec2 b)
+    {
         return a.x * b.y - a.y * b.x;
     }
 
-    glm::vec3 to_vec3(int i, std::vector<float> &v) {
+    glm::vec3 to_vec3(int i, std::vector<float> &v)
+    {
         return glm::vec3(v[i * 3], v[i * 3 + 1], v[i * 3 + 2]);
     }
 
-    glm::vec2 tcoord(int i) {
+    glm::vec2 tcoord(int i)
+    {
         return glm::vec2(texcoords[2 * i], texcoords[2 * i + 1]);
     }
 
-    glm::vec2 compute_tangent_frame(glm::vec2 t0, glm::vec2 t1, glm::vec2 t2) {
+    glm::vec2 compute_tangent_frame(glm::vec2 t0, glm::vec2 t1, glm::vec2 t2)
+    {
         glm::vec2 t10 = t1 - t0;
         glm::vec2 t20 = t2 - t0;
 
@@ -71,13 +77,15 @@ private:
     }
 
 public:
-    void compute_tangent_space() {
+    void compute_tangent_space()
+    {
         tangents.resize(positions.size(), 0);
         std::vector<int> n_star;
         n_star.resize(VertexNumber, 0);
         glm::vec3 tangent;
 
-        for (unsigned int it = 0; it < fn; ++it) {
+        for (unsigned int it = 0; it < fn; ++it)
+        {
             int x_pos = indices[it * 3] * 3;
             std::vector<glm::vec3> p;
             p.resize(3);
@@ -92,7 +100,8 @@ public:
             t[1] = tcoord(indices[it * 3 + 1]);
             t[2] = tcoord(indices[it * 3 + 2]);
 
-            for (int iv = 0; iv < 3; ++iv) {
+            for (int iv = 0; iv < 3; ++iv)
+            {
                 n_star[indices[it * 3 + iv]]++;
 
                 glm::vec2 coords = compute_tangent_frame(t[iv], t[(iv + 1) % 3], t[(iv + 2) % 3]);
@@ -107,7 +116,8 @@ public:
             }
         }
 
-        for (unsigned int iv = 0; iv < VertexNumber; ++iv) {
+        for (unsigned int iv = 0; iv < VertexNumber; ++iv)
+        {
             tangent = to_vec3(iv, tangents);
             tangent /= n_star[iv];
             tangent = glm::normalize(tangent);
@@ -117,8 +127,10 @@ public:
         }
     }
 
-    void compute_edge_indices_from_indices() {
-        for (unsigned int i = 0; i < indices.size() / 3; ++i) {
+    void compute_edge_indices_from_indices()
+    {
+        for (unsigned int i = 0; i < indices.size() / 3; ++i)
+        {
             edge_indices.push_back(indices[i * 3]);
             edge_indices.push_back(indices[i * 3 + 1]);
 
@@ -132,7 +144,8 @@ public:
 };
 
 struct shape_maker {
-    static void cube(shape &s, float r = 0.5, float g = 0.5, float b = 0.5) {
+    static void cube(shape &s, float r = 0.5, float g = 0.5, float b = 0.5)
+    {
         // vertices definition
         ////////////////////////////////////////////////////////////
         s.positions = {
@@ -170,7 +183,8 @@ struct shape_maker {
         s.fn = 12;
     }
 
-    static Renderable cube(float r = 0.5, float g = 0.5, float b = 0.5) {
+    static Renderable cube(float r = 0.5, float g = 0.5, float b = 0.5)
+    {
         shape s;
         cube(s, r, g, b);
         Renderable res;
@@ -178,7 +192,8 @@ struct shape_maker {
         return res;
     }
 
-    static Renderable frame(float scale = 1.f) {
+    static Renderable frame(float scale = 1.f)
+    {
         shape s;
         // vertices definition
         ////////////////////////////////////////////////////////////
@@ -210,15 +225,19 @@ struct shape_maker {
         return res;
     }
 
-    static Renderable line(float length = 1.f) {
+    static Renderable line(float length = 1.f, glm::vec3 source = glm::vec3(0.f),
+                           glm::vec3 target = glm::vec3(0.f, 1.f, 0.f))
+    {
         shape s;
         // vertices definition
         ////////////////////////////////////////////////////////////
+
+        target = normalize(target - source) * length;
         s.positions = {
-            0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0
+            source[0], source[1], source[2],
+            target[0], target[1], target[2]
         };
-        s.positions[4] *= length;
+        // s.positions[4] *= length;
 
         // LINES definition
         ////////////////////////////////////////////////////////////
@@ -228,7 +247,9 @@ struct shape_maker {
         return res;
     }
 
-    static void cylinder(shape &s, int resolution, float r = 0.5, float g = 0.5, float b = 0.5) {
+
+    static void cylinder(shape &s, int resolution, float r = 0.5, float g = 0.5, float b = 0.5)
+    {
         // vertices definition
         ////////////////////////////////////////////////////////////
 
@@ -240,7 +261,8 @@ struct shape_maker {
 
         // lower circle
         int vertexoffset = 0;
-        for (int i = 0; i < resolution; i++) {
+        for (int i = 0; i < resolution; i++)
+        {
             angle = -step * i;
 
             s.positions[vertexoffset] = radius * std::cos(angle);
@@ -250,7 +272,8 @@ struct shape_maker {
         }
 
         // upper circle
-        for (int i = 0; i < resolution; i++) {
+        for (int i = 0; i < resolution; i++)
+        {
             angle = -step * i;
 
             s.positions[vertexoffset] = radius * std::cos(angle);
@@ -268,7 +291,8 @@ struct shape_maker {
         s.positions[vertexoffset + 1] = 2.0;
         s.positions[vertexoffset + 2] = 0.0;
 
-        for (int i = 0; i < s.positions.size(); i += 3) {
+        for (int i = 0; i < s.positions.size(); i += 3)
+        {
             s.colors.push_back(r);
             s.colors.push_back(g);
             s.colors.push_back(b);
@@ -281,7 +305,8 @@ struct shape_maker {
 
         // lateral surface
         int triangleoffset = 0;
-        for (int i = 0; i < resolution; i++) {
+        for (int i = 0; i < resolution; i++)
+        {
             s.indices[triangleoffset] = i;
             s.indices[triangleoffset + 1] = (i + 1) % resolution;
             s.indices[triangleoffset + 2] = (i % resolution) + resolution;
@@ -294,7 +319,8 @@ struct shape_maker {
         }
 
         // bottom of the cylinder
-        for (int i = 0; i < resolution; i++) {
+        for (int i = 0; i < resolution; i++)
+        {
             s.indices[triangleoffset] = i;
             s.indices[triangleoffset + 1] = (i + 1) % resolution;
             s.indices[triangleoffset + 2] = 2 * resolution;
@@ -302,7 +328,8 @@ struct shape_maker {
         }
 
         // top of the cylinder
-        for (int i = 0; i < resolution; i++) {
+        for (int i = 0; i < resolution; i++)
+        {
             s.indices[triangleoffset] = resolution + i;
             s.indices[triangleoffset + 1] = ((i + 1) % resolution) + resolution;
             s.indices[triangleoffset + 2] = 2 * resolution + 1;
@@ -313,7 +340,8 @@ struct shape_maker {
         s.fn = static_cast<unsigned int>(s.indices.size() / 3);
     }
 
-    static Renderable cylinder(int resolution, float r = 0.5, float g = 0.5, float b = 0.5) {
+    static Renderable cylinder(int resolution, float r = 0.5, float g = 0.5, float b = 0.5)
+    {
         shape s;
         cylinder(s, resolution, r, g, b);
         Renderable res;
@@ -321,7 +349,8 @@ struct shape_maker {
         return res;
     }
 
-    static Renderable quad() {
+    static Renderable quad()
+    {
         shape s;
         Renderable r;
         s.positions = {-1, -1, 0, 1, -1, 0, 1, 1, 0, -1, 1, 0};
@@ -332,12 +361,14 @@ struct shape_maker {
         return r;
     }
 
-    static void rectangle(shape &s, unsigned int nX, unsigned int nY) {
+    static void rectangle(shape &s, unsigned int nX, unsigned int nY)
+    {
         s.positions.resize(3 * (nX + 1) * (nY + 1));
         s.texcoords.resize(2 * (nX + 1) * (nY + 1));
 
         for (unsigned int i = 0; i < nX + 1; ++i)
-            for (unsigned int j = 0; j < nY + 1; ++j) {
+            for (unsigned int j = 0; j < nY + 1; ++j)
+            {
                 s.positions[3 * (j * (nX + 1) + i) + 0] = -1.f + 2 * j / float(nY);
                 s.positions[3 * (j * (nX + 1) + i) + 1] = 0.f;
                 s.positions[3 * (j * (nX + 1) + i) + 2] = -1.f + 2 * i / float(nX);
@@ -345,7 +376,8 @@ struct shape_maker {
                 s.texcoords[2 * (j * (nX + 1) + i) + 0] = (-1.f + 2 * j / float(nY) / 2.f + 1.f);
                 s.texcoords[2 * (j * (nX + 1) + i) + 1] = (float) (1.0 - (-1.f + 2 * i / float(nX) / 2.f + 1.f));
             }
-        for (unsigned int i = 0; i < s.positions.size() / 3; ++i) {
+        for (unsigned int i = 0; i < s.positions.size() / 3; ++i)
+        {
             s.normals.push_back(0.0);
             s.normals.push_back(1.0);
             s.normals.push_back(0.0);
@@ -353,7 +385,8 @@ struct shape_maker {
 
 
         for (unsigned int i = 0; i < nX; ++i)
-            for (unsigned int j = 0; j < nY; ++j) {
+            for (unsigned int j = 0; j < nY; ++j)
+            {
                 s.indices.push_back(j * (nX + 1) + i);
                 s.indices.push_back(j * (nX + 1) + i + 1);
                 s.indices.push_back((j + 1) * (nX + 1) + i + 1);
@@ -367,14 +400,17 @@ struct shape_maker {
         s.fn = static_cast<unsigned int>(s.indices.size() / 3);
     }
 
-    static Renderable Rectangle(unsigned int nX, unsigned int nY) {
+    static Renderable Rectangle(unsigned int nX, unsigned int nY)
+    {
         Renderable res;
         shape s;
         rectangle(s, nX, nY);
         s.ToRenderable(res);
         return res;
     }
-    static Renderable TriangleWiredRectangle(unsigned int nX, unsigned int nY) {
+
+    static Renderable TriangleWiredRectangle(unsigned int nX, unsigned int nY)
+    {
         Renderable res;
         shape s;
         rectangle(s, nX, nY);
@@ -382,7 +418,8 @@ struct shape_maker {
         return s.ToRenderable();
     }
 
-    static void sphere(shape &s) {
+    static void sphere(shape &s)
+    {
         s.positions = {
             0.399607f, 0.912982f, 0.0823236f, 0.399607f, 0.912982f, -0.0823236f, 0.266405f, 0.963861f, 0.f, 0.262866f,
             0.951057f, 0.16246f, 0.525731f, 0.850651f, 0.f, 0.262866f, 0.951057f, -0.16246f, 0.133071f, 0.987688f,
@@ -630,7 +667,8 @@ struct shape_maker {
             -0.647412f, -0.296005f, -0.70231f, -0.571252f, -0.213023f, -0.792649f
         };
 
-        for (unsigned int i = 0; i < s.positions.size() / 3; ++i) {
+        for (unsigned int i = 0; i < s.positions.size() / 3; ++i)
+        {
             glm::vec3 p(s.positions[i * 3], s.positions[i * 3 + 1], s.positions[i * 3 + 2]);
             p = glm::normalize(p);
             s.normals.push_back(p.x);
@@ -898,7 +936,8 @@ struct shape_maker {
         s.fn = static_cast<unsigned int>(s.indices.size() / 3);
     }
 
-    static Renderable sphere() {
+    static Renderable sphere()
+    {
         Renderable res;
         shape s;
         sphere(s);
@@ -906,11 +945,13 @@ struct shape_maker {
         return res;
     }
 
-    static int pos(int i, int j, int stacks) {
+    static int pos(int i, int j, int stacks)
+    {
         return j * (stacks + 1) + i;
     }
 
-    static void torus(shape &s, float in_radius, float out_radius, unsigned int stacks, unsigned int slices) {
+    static void torus(shape &s, float in_radius, float out_radius, unsigned int stacks, unsigned int slices)
+    {
         // vertices definition
         ////////////////////////////////////////////////////////////
         s.texcoords.resize(2 * ((stacks + 1) * (slices + 1)));
@@ -922,10 +963,12 @@ struct shape_maker {
 
         glm::mat4 R(1.0);
         glm::vec4 p(0.0), nm(0.0);
-        for (unsigned int i = 0; i < stacks + 1; ++i) {
+        for (unsigned int i = 0; i < stacks + 1; ++i)
+        {
             R = glm::rotate(glm::mat4(1.f), step_stacks * i, glm::vec3(0, 1, 0));
 
-            for (unsigned int j = 0; j < slices + 1; ++j) {
+            for (unsigned int j = 0; j < slices + 1; ++j)
+            {
                 float x = in_radius * cos(j * step_slices);
                 float y = in_radius * sin(j * step_slices);
                 float z = 0.0;
@@ -957,7 +1000,8 @@ struct shape_maker {
         s.indices.resize((stacks) * (slices) * 2 * 3);
         int n = 0;
         for (unsigned int i = 0; i < stacks; ++i)
-            for (unsigned int j = 0; j < slices; ++j) {
+            for (unsigned int j = 0; j < slices; ++j)
+            {
                 int i1 = (i + 1); //%stacks;
                 int j1 = (j + 1); //%slices;
 

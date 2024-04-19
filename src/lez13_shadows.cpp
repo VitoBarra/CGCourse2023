@@ -116,7 +116,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 void print_info() {}
 
 /* which algorithm to use */
-static int selected_mode = 0;
+static int shadowMap_mode = 0;
 
 /* paramters of the VSM (it should be 0.5) */
 static float k_plane_approx = 0.5;
@@ -127,13 +127,13 @@ void gui()
 
     if (ImGui::BeginMenu("Shadow mode"))
     {
-        if (ImGui::Selectable("none", selected_mode == 0)) selected_mode = 0;
-        if (ImGui::Selectable("Basic shadow mapping", selected_mode == 1)) selected_mode = 1;
-        if (ImGui::Selectable("bias", selected_mode == 2)) selected_mode = 2;
-        if (ImGui::Selectable("slope bias", selected_mode == 3)) selected_mode = 3;
-        if (ImGui::Selectable("back faces", selected_mode == 4)) selected_mode = 4;
-        if (ImGui::Selectable("PCF", selected_mode == 5)) selected_mode = 5;
-        if (ImGui::Selectable("Variance SM", selected_mode == 6)) selected_mode = 6;
+        if (ImGui::Selectable("none", shadowMap_mode == 0)) shadowMap_mode = 0;
+        if (ImGui::Selectable("Basic shadow mapping", shadowMap_mode == 1)) shadowMap_mode = 1;
+        if (ImGui::Selectable("bias", shadowMap_mode == 2)) shadowMap_mode = 2;
+        if (ImGui::Selectable("slope bias", shadowMap_mode == 3)) shadowMap_mode = 3;
+        if (ImGui::Selectable("back faces", shadowMap_mode == 4)) shadowMap_mode = 4;
+        if (ImGui::Selectable("PCF", shadowMap_mode == 5)) shadowMap_mode = 5;
+        if (ImGui::Selectable("Variance SM", shadowMap_mode == 6)) shadowMap_mode = 6;
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu("parameters"))
@@ -496,7 +496,7 @@ int lez13(void)
         glUniform1f(depth_shader["uPlaneApprox"], k_plane_approx);
 
 
-        if (selected_mode == 4 || selected_mode == 5)
+        if (shadowMap_mode == 4 || shadowMap_mode == 5)
         {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_FRONT);
@@ -507,7 +507,7 @@ int lez13(void)
         glCullFace(GL_BACK);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        if (selected_mode == 6)
+        if (shadowMap_mode == 6)
         {
             blur_texture(fbo.id_texture, r_quad);
         }
@@ -520,7 +520,7 @@ int lez13(void)
         glUniformMatrix4fv(shadow_shader["uT"], 1, GL_FALSE, &stack.peak()[0][0]);
         glUniform1fv(shadow_shader["uBias"], 1, &depth_bias);
         glUniform2i(shadow_shader["uShadowMapSize"], Lproj.SizeW, Lproj.SizeH);
-        glUniform1i(shadow_shader["uRenderMode"], selected_mode);
+        glUniform1i(shadow_shader["uRenderMode"], shadowMap_mode);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, fbo.id_texture);
 
