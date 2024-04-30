@@ -47,8 +47,8 @@ void main(void)
     vLWS = normalize((nWS-fWS).xyz);
 
 
-    /*Phong*/
 
+    /*Phong*/
     vNormalVS=normalize((uV*uT*vec4(aNormal, 0.0)).xyz);
     vLdirVS  =(uV*uLdir).xyz;
     vposVS   =(uV*uT*vec4(aPosition, 1.0)).xyz;
