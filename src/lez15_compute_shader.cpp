@@ -139,7 +139,7 @@ void create_image() {
     CheckGLErrors(__LINE__, __FILE__);
 }
 
-std::string shaders_path = "../Shaders/";
+std::string shaders_path = "../Shaders/Prof/";
 
 unsigned int compute;
 GLint ID;

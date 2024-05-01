@@ -351,7 +351,7 @@ int lez13(void)
     CheckGLErrors(__LINE__, __FILE__, true);
 
     /* load the Shaders */
-    std::string shaders_path = "../Shaders/";
+    std::string shaders_path = "../Shaders/Prof/";
     depth_shader.create_program(shaders_path + "depth_map.vert", shaders_path + "depth_map.frag");
     shadow_shader.create_program(shaders_path + "shadow_mapping.vert", shaders_path + "shadow_mapping.frag");
     fsq_shader.create_program(shaders_path + "fsq.vert", shaders_path + "fsq.frag");

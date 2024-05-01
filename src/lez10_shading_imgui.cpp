@@ -120,7 +120,7 @@ int lez10(void)
 
 
     /* load the Shaders */
-    std::string shaders_path = "../Shaders/";
+    std::string shaders_path = "../Shaders/Prof/";
     /* Program Shaders used */
     Shader phong_shader;
     phong_shader.create_program(shaders_path + "phong.vert", shaders_path + "phong.frag");

@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
+#include <algorithm>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/glm.hpp>
 #include <iostream>
@@ -33,47 +34,58 @@
 trackball trackballs[2];
 view_manipulator viewManipulator;
 int trackBall_index;
-bool debugMode = true;
+bool debugMode ;
 
 
 /* shadowMap */
-static int shadowMap_mode = 3;
-float depth_bias = 0.003f;
-float distance_light = 2.0f;
+float depth_bias;
+float distance_light;
+static int shadowMap_mode;
+int kernel_size;
 ShadowMap ShadowMap;
 glm::mat4 lightView;
+
 /* paramters of the VSM (it should be 0.5) */
-static float k_plane_approx = 0.5;
-/*Phong*/
+float k_plane_approx;
 
-int CarShininess = 10;
-glm::vec3 CarEmissive = glm::vec3(0, 0, 0);
-glm::vec3 CarAmbient = glm::vec3(0, 0, 0);
+/*blinn-Phong*/
+int car_selected_shader;
+bool car_usePhongar = false;
+bool car_userMaterial;
+int CarShininess;
+glm::vec3 CarEmissive;
+glm::vec3 CarAmbient;
 
-int terrainShininess = 100;
-glm::vec3 terrainEmissive = glm::vec3(0, 0, 0);
-glm::vec3 terrainAmbient = glm::vec3(0, 0, 0);
+int terrain_selected_shader;
+bool terrain_usePhongar = false;
+int terrainShininess;
+glm::vec3 terrainEmissive;
+glm::vec3 terrainAmbient;
 
-int car_selected_shader = 2;
-int terrain_selected_shader = 2;
 
 /*transformation*/
 glm::mat4 viewMatrix;
 glm::mat4 transMatrix;
 glm::mat4 perspProjection;
 glm::mat4 identityMatrix;
+
 /*Enviroment Texture*/
 glm::mat4 skyBoxScale;
 
 
-/*debug*/
-const char *debug_lightView_name[2] = {"No transf", "With transf"};
-int lightViewType = 0;
-
 /*GUI*/
-const char *shaders_name[3] = {"Phong", "hadow", "Phong-Shadow"};
-const char *trackBall_name[3] = {"Scene", "Light", "View"};
-/* which algorithm to use */
+const int SHADER_NUM = 1;
+const char* shaders_name[SHADER_NUM] = {"Blinn-Phong-Shadow"};
+const char* trackBall_name[3] = {"Scene", "Light", "View"};
+
+const char* shadowMapDim[] = {"32", "64", "128", "256", "512", "1024", "2048", "4096"};
+const char* current_width = NULL;
+const char* current_hight = NULL;
+
+/*uniform texture*/
+int DiffuseTexture_tu = 0;
+int SkyBox_tu  = 1;
+int ShadowMap_tu = 2;
 
 void PrintState()
 {
@@ -82,18 +94,17 @@ void PrintState()
         std::cout << "------------------------------------------------------------" << std::endl;
         std::cout << "Current Trackball: " << trackBall_name[trackBall_index] << std::endl;
         std::cout << "ShadowMap Paramether:" << std::endl <<
-                "  - TextureSize: " << " W:" << ShadowMap.SizeH << " H:" << ShadowMap.SizeW << std::endl <<
-                "  - DepthBias: " << depth_bias << std::endl <<
-                "  - Distance Light: " << distance_light << std::endl <<
-                "Car Shader: " << shaders_name[car_selected_shader] << std::endl <<
-                "  - shines: " << CarShininess << std::endl <<
-                "Terrain Shader: " << shaders_name[terrain_selected_shader] << std::endl <<
-                "  - shines: " << terrainShininess << std::endl <<
-                "ViewLight: " << debug_lightView_name[lightViewType] << std::endl;
+            "  - TextureSize: " << " W:" << ShadowMap.SizeH << " H:" << ShadowMap.SizeW << std::endl <<
+            "  - DepthBias: " << depth_bias << std::endl <<
+            "  - Distance Light: " << distance_light << std::endl <<
+            "Car Shader: " << shaders_name[car_selected_shader] << std::endl <<
+            "  - shines: " << CarShininess << std::endl <<
+            "Terrain Shader: " << shaders_name[terrain_selected_shader] << std::endl <<
+            "  - shines: " << terrainShininess << std::endl;
     }
 }
 
-static void cursor_position_callback(GLFWwindow *window, double xpos, double ypos)
+static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (trackBall_index < 2)
         trackballs[trackBall_index].mouse_move(perspProjection, viewMatrix, xpos, ypos);
@@ -101,11 +112,12 @@ static void cursor_position_callback(GLFWwindow *window, double xpos, double ypo
         viewManipulator.mouse_move(xpos, ypos);
 }
 
-void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        double xpos, ypos;
+        double xpos;
+        double ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         if (trackBall_index < 2)
             trackballs[trackBall_index].mouse_press(perspProjection, viewMatrix, xpos, ypos);
@@ -122,36 +134,64 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 }
 
 /* callback function called when a mouse wheel is rotated */
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     if (trackBall_index == 0)
         trackballs[0].mouse_scroll(xoffset, yoffset);
 }
 
 
+
 void Reset()
 {
     trackballs[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
     trackballs[1].set_center_radius(glm::vec3(0, 0, 0), 2.f);
-    for (auto &tracball: trackballs)
+    for (auto& tracball : trackballs)
         tracball.reset();
     viewManipulator.reset();
 
-    lightViewType = 1;
 
-    trackBall_index = 0;
-    distance_light = 2;
-    depth_bias = 0.003f;
-    CarShininess = 10;
-    terrainShininess = 100;
-    int mult = 1;
-    ShadowMap.create(mult * 512, mult * 512);
+    /* general value */
+    debugMode = true;
     transMatrix = glm::mat4(1.0);
 
-    debugMode = true;
+    /* control */
+    trackBall_index = 0;
+
+    /* shadowMap */
+    depth_bias = 0.003f;
+    distance_light = 10.0f;
+    shadowMap_mode = 5;
+    kernel_size = 5;
+    current_width = shadowMapDim[5];
+    current_hight = shadowMapDim[5];
+    ShadowMap.create(std::stoi(current_width), std::stoi(current_hight));
+
+
+    /* paramters of the VSM (it should be 0.5) */
+    k_plane_approx = 0.5;
+
+    /*blinn-Phong*/
+    car_usePhongar = false;
+    car_userMaterial = false;
+    CarShininess = 30;
+    CarEmissive = glm::vec3(0, 0, 0);
+    CarAmbient = glm::vec3(0, 0, 0);
+
+    terrain_usePhongar = false;
+    terrainShininess = 100;
+    terrainEmissive = glm::vec3(0, 0, 0);
+    terrainAmbient = glm::vec3(0, 0, 0);
+
+     car_selected_shader = 0;
+     terrain_selected_shader = 0;
+
+
+
+
 }
 
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     bool repeated = action == GLFW_REPEAT || action == GLFW_PRESS;
     bool pressed = action == GLFW_PRESS;
@@ -181,19 +221,25 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 }
 
 
-void RenderCarModel(Shader shader, std::vector<Renderable> loadedModel, glm::vec4 lightDirec,
-                    glm::mat4 cur_viewMatrix)
+void RenderCarModel(Shader shader, std::vector<Renderable> loadedModel, const glm::mat4& frameViewMatrix,
+                    const glm::vec4 lightDirec)
 {
     auto worldTrackBall = trackballs[0].matrix();
     auto lightTrackBall = trackballs[1].matrix();
     shader.LoadProgram();
 
+    shader.SetUniform1i("uUsePhong", car_usePhongar);
     shader.SetUniformVec3f("uEmissiveColor", CarEmissive);
     shader.SetUniformVec3f("uAmbientColor", CarAmbient);
     shader.SetUniform1f("uShininess", CarShininess);
 
-    shader.SetUniformMat4f("uV", cur_viewMatrix);
+    shader.SetUniformMat4f("uV", frameViewMatrix);
     shader.SetUniformVec4f("uLdir", lightTrackBall * lightDirec);
+    shader.SetUniform1i("uUseMaterial",car_userMaterial);
+
+    shader.SetUniform1i("uDiffuseTexture", DiffuseTexture_tu);
+
+
 
     if (loadedModel.empty())
         shader.SetUniformMat4f("uT", worldTrackBall * transMatrix);
@@ -206,17 +252,14 @@ void RenderCarModel(Shader shader, std::vector<Renderable> loadedModel, glm::vec
 
         shader.SetUniformMat4f("uT", worldTrackBall * transMatrix * scalingdiagonal);
 
-        for (auto &renderablePice: loadedModel)
+
+
+        for (auto& renderablePice : loadedModel)
         {
             renderablePice.SetAsCurrentObjectToRender();
-            /* every Renderable object has its own material. Here just the diffuse color is used.
-                ADD HERE CODE TO PASS OTHE MATERIAL PARAMETERS.
-                */
+            renderablePice.material.diffuse_texture.bind(DiffuseTexture_tu);
             shader.SetUniformVec3f("uDiffuseColor", renderablePice.material.diffuse);
-            //Phong_shader.SetUniformVec3f("uAmbientColor", renderablePice.material.ambient);
             shader.SetUniformVec3f("uSpecularColor", renderablePice.material.specular);
-            //Phong_shader.SetUniformVec3f("uEmissiveColor", renderablePice.material.emission);
-            //shader.SetUniform1f("uShininess", renderablePice.material.shininess);
             shader.SetUniform1f("uRefractionIndex", renderablePice.material.RefractionIndex);
             renderablePice.elements[0].Render();
             CheckGLErrors(__LINE__, __FILE__);
@@ -275,9 +318,10 @@ void RenderDebug(Shader flatAlpha_shader, Renderable r_plane, Renderable r_frame
     }
 }
 
-void RenderEnviroment(Shader texture_shader, Renderable r_skyBox)
+void RenderEnviroment(Shader skybox_shader, Renderable r_skyBox, glm::mat4 frame_viewMatrix)
 {
-    texture_shader.LoadProgram();
+    skybox_shader.LoadProgram();
+    skybox_shader.SetUniformMat4f("uV", frame_viewMatrix);
     r_skyBox.SetAsCurrentObjectToRender();
     r_skyBox.RenderTriangles();
     Shader::UnloadProgram();
@@ -290,6 +334,7 @@ void RenderTerrain(Shader shader, Renderable r_terrain, glm::mat4 cur_viewMatrix
     auto lightTrackBall = trackballs[1].matrix();
     shader.LoadProgram();
 
+    shader.SetUniform1i("uUsePhong", terrain_usePhongar);
     shader.SetUniformVec4f("uLdir", lightTrackBall * lightDirec);
     shader.SetUniformMat4f("uV", cur_viewMatrix);
     shader.SetUniformMat4f("uT", worldTrackBall * glm::scale(glm::mat4(1.0f), glm::vec3(50)));
@@ -298,6 +343,9 @@ void RenderTerrain(Shader shader, Renderable r_terrain, glm::mat4 cur_viewMatrix
     shader.SetUniformVec3f("uEmissiveColor", terrainEmissive);
     shader.SetUniformVec3f("uAmbientColor", terrainAmbient);
     shader.SetUniform1f("uShininess", terrainShininess);
+
+    shader.SetUniform1i("uUseMaterial", true);
+
     r_terrain.SetAsCurrentObjectToRender();
     r_terrain.RenderTriangles();
     CheckGLErrors(__LINE__, __FILE__);
@@ -310,10 +358,11 @@ void SetShadowParamether(Shader shader, glm::mat4 lightView)
     shader.SetUniformMat4f("uLightMatrix", lightView);
     shader.SetUniform2i("uShadowMapSize", ShadowMap.SizeW, ShadowMap.SizeH);
     shader.SetUniform1f("uBias", depth_bias);
-    shader.SetUniform1i("uRenderMode", shadowMap_mode);
+    shader.SetUniform1i("uShadowMode", shadowMap_mode);
+    shader.SetUniform1i("uKernelSize", kernel_size);
 }
 
-glm::mat4 CalculateLightViewMatrix(Renderable &r_LightViewline)
+glm::mat4 CalculateLightViewMatrix(Renderable& r_LightViewline)
 {
     auto worldTrackBall = trackballs[0].matrix();
     auto lightTrackBall = trackballs[1].matrix();
@@ -323,24 +372,15 @@ glm::mat4 CalculateLightViewMatrix(Renderable &r_LightViewline)
     auto up = glm::vec3(0.f, 0.f, -1.f);
     glm::mat4 lightViewMatrix;
 
-    if (lightViewType == 0)
-    {
-        lightViewMatrix = glm::lookAt(eye, center, up) * glm::inverse(lightTrackBall);
-        r_LightViewline = shape_maker::line(distance_light, center, eye);
-    }
-    else if (lightViewType == 1)
-    {
-        auto newEye = glm::vec3(worldTrackBall * transMatrix * glm::vec4(eye, 1.f));
-        auto newCenter = glm::vec3(worldTrackBall * transMatrix * glm::vec4(center, 1.f));
-        //This shoud align the light camera and the plane
-        lightViewMatrix = glm::lookAt(newEye, newCenter, up) * glm::inverse(lightTrackBall);
-        r_LightViewline = shape_maker::line(distance_light, newCenter, newEye);
-    }
+
+    lightViewMatrix = glm::lookAt(eye, center, up) * glm::inverse(lightTrackBall);
+    r_LightViewline = shape_maker::line(distance_light, center, eye);
+
 
     return lightViewMatrix;
 }
 
-void gui(Renderable &r_LightViewline)
+void gui(Renderable& r_LightViewline)
 {
     ImGui::BeginMainMenuBar();
 
@@ -352,33 +392,69 @@ void gui(Renderable &r_LightViewline)
         if (ImGui::Selectable("slope bias", shadowMap_mode == 3)) shadowMap_mode = 3;
         if (ImGui::Selectable("back faces", shadowMap_mode == 4)) shadowMap_mode = 4;
         if (ImGui::Selectable("PCF", shadowMap_mode == 5)) shadowMap_mode = 5;
-        if (ImGui::Selectable("Variance SM", shadowMap_mode == 6)) shadowMap_mode = 6;
         ImGui::EndMenu();
     }
 
     if (ImGui::BeginMenu("Shadow Map "))
     {
-        const char *items[] = {"32", "64", "128", "256", "512", "1024", "2048", "4096"};
-        int h, w;
-        if (ImGui::ListBox("width", &w, items, IM_ARRAYSIZE(items), 8))
-            if (ShadowMap.SizeW != 1 << (5 + w))
+        if (ImGui::BeginCombo("width", current_width))
+        {
+            for (int w = 0; w < IM_ARRAYSIZE(shadowMapDim); w++)
             {
-                ShadowMap.DepthBuffer.remove();
-                ShadowMap.create(1 << (5 + w), ShadowMap.SizeH);
+                bool is_selected = current_width == shadowMapDim[w];
+                if (ImGui::Selectable(shadowMapDim[w], is_selected))
+                {
+                    current_width = shadowMapDim[w];
+
+                    if (ShadowMap.SizeW != 1 << (5 + w))
+                    {
+                        ShadowMap.DepthBuffer.remove();
+                        ShadowMap.create(1 << (5 + w), ShadowMap.SizeH);
+                    }
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
             }
-        if (ImGui::ListBox("height", &h, items, IM_ARRAYSIZE(items), 8))
-            if (ShadowMap.SizeH != 1 << (5 + h))
+            ImGui::EndCombo();
+        }
+
+        if (ImGui::BeginCombo("height", current_hight))
+        {
+            for (int h = 0; h < IM_ARRAYSIZE(shadowMapDim); h++)
             {
-                ShadowMap.DepthBuffer.remove();
-                ShadowMap.create(ShadowMap.SizeW, 1 << (5 + h));
+                bool is_selected = (current_hight == shadowMapDim[h]);
+                if (ImGui::Selectable(shadowMapDim[h], is_selected))
+                {
+                    current_hight = shadowMapDim[h];
+
+                    if (ShadowMap.SizeH != 1 << (5 + h))
+                    {
+                        ShadowMap.DepthBuffer.remove();
+                        ShadowMap.create(ShadowMap.SizeW, 1 << (5 + h));
+                    }
+                }
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
             }
+            ImGui::EndCombo();
+        }
+
 
         if (ImGui::SliderFloat("distance", &distance_light, 2.f, 100.f))
             ShadowMap.set_projection(CalculateLightViewMatrix(r_LightViewline), distance_light, box3(1.0));
         ImGui::SliderFloat("  plane approx", &k_plane_approx, 0.0, 1.0);
 
 
-        ImGui::InputFloat("depth bias", &depth_bias, 0, 0, "%.5f");
+        ImGui::InputFloat("depth bias", &depth_bias, 0.001, 0.01, "%.5f");
+        if (shadowMap_mode == 5)
+        {
+            ImGui::InputInt("kernel size", &kernel_size, 2, 6);
+            kernel_size = std::max(kernel_size, 3);
+            if (kernel_size % 2 == 0)
+                kernel_size++;
+        }
+
+
         ImGui::EndMenu();
     }
 
@@ -386,43 +462,47 @@ void gui(Renderable &r_LightViewline)
     if (ImGui::BeginMenu("Car Shader"))
     {
         int s = 0;
-        if (ImGui::ListBox("Cshader", &s, shaders_name, IM_ARRAYSIZE(shaders_name), 3))
+        if (ImGui::ListBox("Cshader", &s, shaders_name, IM_ARRAYSIZE(shaders_name), SHADER_NUM))
             car_selected_shader = s;
-        if (car_selected_shader == 2)
-        {
-            if (ImGui::SliderInt("Shininess", &CarShininess, 2, 100));
 
-            ImGui::Text("Emissive:");
-            ImGui::SliderFloat("ce-Red", &CarEmissive[0], 0.0f, 1.0f);
-            ImGui::SliderFloat("ce-Green", &CarEmissive[1], 0.0f, 1.0f);
-            ImGui::SliderFloat("ce-Blue", &CarEmissive[2], 0.0f, 1.0f);
+        ImGui::Checkbox("use Phong", &car_usePhongar);
+        if (ImGui::Checkbox("use Material", &car_userMaterial));
+        if (ImGui::SliderInt("Shininess", &CarShininess, 2, 100));
 
-            ImGui::Text("Ambient:");
-            ImGui::SliderFloat("ca-Red", &CarAmbient[0], 0.0f, 1.0f);
-            ImGui::SliderFloat("ca-Green", &CarAmbient[1], 0.0f, 1.0f);
-            ImGui::SliderFloat("ca-Blue", &CarAmbient[2], 0.0f, 1.0f);
-        }
+        ImGui::Text("Emissive:");
+        ImGui::SliderFloat("ce-Red", &CarEmissive[0], 0.0f, 1.0f);
+        ImGui::SliderFloat("ce-Green", &CarEmissive[1], 0.0f, 1.0f);
+        ImGui::SliderFloat("ce-Blue", &CarEmissive[2], 0.0f, 1.0f);
+
+        ImGui::Text("Ambient:");
+        ImGui::SliderFloat("ca-Red", &CarAmbient[0], 0.0f, 1.0f);
+        ImGui::SliderFloat("ca-Green", &CarAmbient[1], 0.0f, 1.0f);
+        ImGui::SliderFloat("ca-Blue", &CarAmbient[2], 0.0f, 1.0f);
+
+
         ImGui::EndMenu();
     }
+
     if (ImGui::BeginMenu("Terrain Shader"))
     {
         int s = 0;
-        if (ImGui::ListBox(" Tshader", &s, shaders_name, IM_ARRAYSIZE(shaders_name), 3))
+        if (ImGui::ListBox(" Tshader", &s, shaders_name, IM_ARRAYSIZE(shaders_name), SHADER_NUM))
             terrain_selected_shader = s;
-        if (terrain_selected_shader == 2)
-        {
-            if (ImGui::SliderInt("Shininess", &terrainShininess, 2, 100));
 
-            ImGui::Text("Emissive:");
-            ImGui::SliderFloat("te-Red", &terrainEmissive[0], 0.0f, 1.0f);
-            ImGui::SliderFloat("te-Green", &terrainEmissive[1], 0.0f, 1.0f);
-            ImGui::SliderFloat("te-Blue", &terrainEmissive[2], 0.0f, 1.0f);
+        ImGui::Checkbox("use Phong", &terrain_usePhongar);
+        if (ImGui::SliderInt("Shininess", &terrainShininess, 2, 100));
 
-            ImGui::Text("Ambient:");
-            ImGui::SliderFloat("Ta-Red", &terrainAmbient[0], 0.0f, 1.0f);
-            ImGui::SliderFloat("Ta-Green", &terrainAmbient[1], 0.0f, 1.0f);
-            ImGui::SliderFloat("Ta-Blue", &terrainAmbient[2], 0.0f, 1.0f);
-        }
+        ImGui::Text("Emissive:");
+        ImGui::SliderFloat("te-Red", &terrainEmissive[0], 0.0f, 1.0f);
+        ImGui::SliderFloat("te-Green", &terrainEmissive[1], 0.0f, 1.0f);
+        ImGui::SliderFloat("te-Blue", &terrainEmissive[2], 0.0f, 1.0f);
+
+        ImGui::Text("Ambient:");
+        ImGui::SliderFloat("Ta-Red", &terrainAmbient[0], 0.0f, 1.0f);
+        ImGui::SliderFloat("Ta-Green", &terrainAmbient[1], 0.0f, 1.0f);
+        ImGui::SliderFloat("Ta-Blue", &terrainAmbient[2], 0.0f, 1.0f);
+
+
         ImGui::EndMenu();
     }
 
@@ -441,20 +521,36 @@ void gui(Renderable &r_LightViewline)
         ImGui::EndMenu();
     }
 
-    if (ImGui::BeginMenu("Debug"))
-    {
-        int i;
-        if (ImGui::ListBox("LightView", &i, debug_lightView_name, IM_ARRAYSIZE(debug_lightView_name), 2))
-            lightViewType = i;
-
-        ImGui::EndMenu();
-    }
     ImGui::EndMainMenuBar();
 }
 
 
-
 #endif
+void RenderToShadowMapTexture(Shader depth_shader, glm::mat4 frame_viewMatrix, glm::vec4 lightDirec, std::vector<Renderable> loadedModel, Renderable r_terrain, glm::mat4 lightView)
+{
+
+    ShadowMap.Bind();
+    depth_shader.LoadProgram();
+    depth_shader.SetUniformMat4f("uLightMatrix", lightView);
+    depth_shader.SetUniform1f("uPlaneApprox", k_plane_approx);
+
+
+    if (shadowMap_mode == 4 || shadowMap_mode == 5)
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+    }
+
+
+    RenderTerrain(depth_shader, r_terrain, frame_viewMatrix, lightDirec);
+    RenderCarModel(depth_shader, loadedModel, frame_viewMatrix, lightDirec);
+
+    glDisable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    ShadowMap.undind();
+    Shader::UnloadProgram();
+}
+
 int main()
 {
 #ifdef COMPILE_PROF_CODE
@@ -462,7 +558,7 @@ int main()
         lez13();
         return 0;
 #else
-    GLFWwindow *window = GLFWWindowStarter::CreateWindow(1000, 800, "CG_Project");
+    GLFWwindow* window = GLFWWindowStarter::CreateWindow(1000, 800, "CG_Project");
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
@@ -471,12 +567,12 @@ int main()
     glewInit();
 
     ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     ImGui_ImplOpenGL3_Init();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
 
 
-    /* inizialize mause interaction */
+    /* set default value */
     Reset();
 
 
@@ -504,20 +600,7 @@ int main()
     load_obj(loadedModel, "../Models/Datsun_280Z", "datsun_280Z.obj");
 
 
-    std::string shaders_path = "../Shaders/";
-
-    Shader Phong_shader = *Shader::CreateShaderFromFile(shaders_path, "phong.vert", "phong.frag");
-    Phong_shader.RegisterUniformVariable("uP"); //View->Projection (NDC)
-    Phong_shader.RegisterUniformVariable("uV"); //Word->View
-    Phong_shader.RegisterUniformVariable("uT"); //Transformation
-    Phong_shader.RegisterUniformVariable("uShadingMode");
-    Phong_shader.RegisterUniformVariable("uDiffuseColor");
-    Phong_shader.RegisterUniformVariable("uSpecularColor");
-    Phong_shader.RegisterUniformVariable("uAmbientColor");
-    Phong_shader.RegisterUniformVariable("uEmissiveColor");
-    Phong_shader.RegisterUniformVariable("uShininess");
-    Phong_shader.RegisterUniformVariable("uRefractionIndex");
-    CheckGLErrors(__LINE__, __FILE__);
+    std::string shaders_path = "../Shaders/Prof/";
 
 
     Shader flatAlpha_shader = *Shader::CreateShaderFromFile(shaders_path, "flat.vert", "flatAlpha.frag");
@@ -527,11 +610,11 @@ int main()
     flatAlpha_shader.RegisterUniformVariable("uColor");
     CheckGLErrors(__LINE__, __FILE__);
 
-    Shader texture_shader = *Shader::CreateShaderFromFile(shaders_path, "SkyBox.vert", "SkyBox.frag");
-    texture_shader.RegisterUniformVariable("uT");
-    texture_shader.RegisterUniformVariable("uP");
-    texture_shader.RegisterUniformVariable("uV");
-    texture_shader.RegisterUniformVariable("uSkybox");
+    Shader skybox_shader = *Shader::CreateShaderFromFile(shaders_path, "SkyBox.vert", "SkyBox.frag");
+    skybox_shader.RegisterUniformVariable("uT");
+    skybox_shader.RegisterUniformVariable("uP");
+    skybox_shader.RegisterUniformVariable("uV");
+    skybox_shader.RegisterUniformVariable("uSkybox");
     CheckGLErrors(__LINE__, __FILE__);
 
     Shader depth_shader = *Shader::CreateShaderFromFile(shaders_path, "depth_map.vert", "depth_map.frag");
@@ -539,46 +622,35 @@ int main()
     depth_shader.RegisterUniformVariable("uLightMatrix");
     depth_shader.RegisterUniformVariable("uPlaneApprox");
 
-    Shader shadowMap_shader = *Shader::CreateShaderFromFile(shaders_path, "shadow_mapping.vert", "shadow_mapping.frag");
-    shadowMap_shader.RegisterUniformVariable("uT");
-    shadowMap_shader.RegisterUniformVariable("uP");
-    shadowMap_shader.RegisterUniformVariable("uV");
-    shadowMap_shader.RegisterUniformVariable("uShadowMap");
-    shadowMap_shader.RegisterUniformVariable("uLightMatrix");
-    shadowMap_shader.RegisterUniformVariable("uShadowMapSize");
-    shadowMap_shader.RegisterUniformVariable("uBias");
-    shadowMap_shader.RegisterUniformVariable("uRenderMode");
-    shadowMap_shader.RegisterUniformVariable("uDiffuseColor");
 
-    Shader Phong_shadowMap_shader = *Shader::CreateShaderFromFile(shaders_path, "Phong_shadow_mapping.vert",
-                                                                  "Phong_shadow_mapping.frag");
-
-    Phong_shadowMap_shader.RegisterUniformVariable("uT");
-    Phong_shadowMap_shader.RegisterUniformVariable("uP");
-    Phong_shadowMap_shader.RegisterUniformVariable("uV");
-    Phong_shadowMap_shader.RegisterUniformVariable("uShadowMap");
-    Phong_shadowMap_shader.RegisterUniformVariable("uLightMatrix");
-    Phong_shadowMap_shader.RegisterUniformVariable("uShadowMapSize");
-    Phong_shadowMap_shader.RegisterUniformVariable("uBias");
-    Phong_shadowMap_shader.RegisterUniformVariable("uRenderMode");
-
-    Phong_shadowMap_shader.RegisterUniformVariable("uDiffuseColor");
-    Phong_shadowMap_shader.RegisterUniformVariable("uSpecularColor");
-    Phong_shadowMap_shader.RegisterUniformVariable("uAmbientColor");
-    Phong_shadowMap_shader.RegisterUniformVariable("uEmissiveColor");
-    Phong_shadowMap_shader.RegisterUniformVariable("uShininess");
-    Phong_shadowMap_shader.RegisterUniformVariable("uRefractionIndex");
+    shaders_path = "../Shaders/";
 
 
-    /* Set shader matrix */
-    Phong_shader.LoadProgram();
-    Phong_shader.SetUniform1i("uShadingMode", 2);
-    Phong_shader.SetUniformMat4f("uT", identityMatrix);
-    Phong_shader.SetUniformMat4f("uV", viewMatrix);
-    Phong_shader.SetUniformMat4f("uP", perspProjection);
-    Phong_shader.SetUniformVec3f("uDiffuseColor", glm::vec3(0.2));
-    CheckGLErrors(__LINE__, __FILE__);
+    Shader BlinnPhong_shadowMap_shader = *Shader::CreateShaderFromFile(shaders_path, "Blinn-Phong_ShadowMapping.vert",
+                                                                       "Blinn-Phong_ShadowMapping.frag");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uT");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uP");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uV");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uLdir");
 
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uDiffuseColor");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uSpecularColor");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uAmbientColor");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uEmissiveColor");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uShininess");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uRefractionIndex");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uLightModel");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uUsePhong");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uDiffuseTexture");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uUseMaterial");
+
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uShadowMap");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uLightMatrix");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uShadowMode");
+    BlinnPhong_shadowMap_shader.RegisterUniformVariable("uKernelSize");
+
+
+    // init shader
     flatAlpha_shader.LoadProgram();
     flatAlpha_shader.SetUniformMat4f("uT", identityMatrix);
     flatAlpha_shader.SetUniformMat4f("uV", viewMatrix);
@@ -593,41 +665,39 @@ int main()
     depth_shader.SetUniform1f("uPlaneApprox", k_plane_approx);
 
 
-    int shadowMapUt = 0;
-    shadowMap_shader.LoadProgram();
-    shadowMap_shader.SetUniformMat4f("uT", identityMatrix);
-    shadowMap_shader.SetUniformMat4f("uV", viewMatrix);
-    shadowMap_shader.SetUniformMat4f("uP", perspProjection);
-    shadowMap_shader.SetUniformMat4f("uLightMatrix", lightView);
-    shadowMap_shader.SetUniform1i("uShadowMap", shadowMapUt);
-    shadowMap_shader.SetUniform2i("uShadowMapSize", ShadowMap.SizeW, ShadowMap.SizeH);
-    shadowMap_shader.SetUniform1f("uBias", depth_bias);
-    shadowMap_shader.SetUniform1i("uRenderMode", shadowMap_mode);
-    shadowMap_shader.SetUniformVec3f("uDiffuseColor", glm::vec3(0.2));
-    CheckGLErrors(__LINE__, __FILE__);
 
 
-    Phong_shadowMap_shader.LoadProgram();
-    Phong_shadowMap_shader.SetUniformMat4f("uT", identityMatrix);
-    Phong_shadowMap_shader.SetUniformMat4f("uV", viewMatrix);
-    Phong_shadowMap_shader.SetUniformMat4f("uP", perspProjection);
-    Phong_shadowMap_shader.SetUniformMat4f("uLightMatrix", lightView);
-    Phong_shadowMap_shader.SetUniform1i("uShadowMap", shadowMapUt);
-    Phong_shadowMap_shader.SetUniform2i("uShadowMapSize", ShadowMap.SizeW, ShadowMap.SizeH);
-    Phong_shadowMap_shader.SetUniform1f("uBias", depth_bias);
-    Phong_shadowMap_shader.SetUniform1i("uRenderMode", shadowMap_mode);
-    Phong_shadowMap_shader.SetUniformVec3f("uEmissiveColor", CarEmissive);
-    Phong_shadowMap_shader.SetUniformVec3f("uAmbientColor", CarAmbient);
-    Phong_shadowMap_shader.SetUniform1f("uShininess", CarShininess);
-    Phong_shadowMap_shader.SetUniformVec3f("uDiffuseColor", glm::vec3(0.2));
+    BlinnPhong_shadowMap_shader.LoadProgram();
+    // transformation matrix
+    BlinnPhong_shadowMap_shader.SetUniformMat4f("uT", identityMatrix);
+    BlinnPhong_shadowMap_shader.SetUniformMat4f("uV", viewMatrix);
+    BlinnPhong_shadowMap_shader.SetUniformMat4f("uP", perspProjection);
 
 
-    int textureUnit = 1;
-    texture_shader.LoadProgram();
-    texture_shader.SetUniformMat4f("uT", skyBoxScale);
-    texture_shader.SetUniformMat4f("uV", viewMatrix);
-    texture_shader.SetUniformMat4f("uP", perspProjection);
-    texture_shader.SetUniform1i("uSkybox", textureUnit);
+    //blinn-phong paramether
+    BlinnPhong_shadowMap_shader.SetUniformVec3f("uEmissiveColor", CarEmissive);
+    BlinnPhong_shadowMap_shader.SetUniformVec3f("uAmbientColor", CarAmbient);
+    BlinnPhong_shadowMap_shader.SetUniform1f("uShininess", CarShininess);
+    BlinnPhong_shadowMap_shader.SetUniformVec3f("uDiffuseColor", glm::vec3(0.2));
+    BlinnPhong_shadowMap_shader.SetUniform1i("uLightModel", car_usePhongar);
+    BlinnPhong_shadowMap_shader.SetUniform1i("uUseMaterial", true);
+    BlinnPhong_shadowMap_shader.SetUniform1i("uDiffuseTexture", DiffuseTexture_tu);
+
+    // ShadowMap paramether
+    BlinnPhong_shadowMap_shader.SetUniformMat4f("uLightMatrix", lightView);
+    BlinnPhong_shadowMap_shader.SetUniform2i("uShadowMapSize", ShadowMap.SizeW, ShadowMap.SizeH);
+    BlinnPhong_shadowMap_shader.SetUniform1f("uBias", depth_bias);
+    BlinnPhong_shadowMap_shader.SetUniform1i("uKernelSize", kernel_size);
+    BlinnPhong_shadowMap_shader.SetUniform1i("uShadowMode", shadowMap_mode);
+    BlinnPhong_shadowMap_shader.SetUniform1i("uShadowMap", ShadowMap_tu);
+
+
+
+    skybox_shader.LoadProgram();
+    skybox_shader.SetUniformMat4f("uT", skyBoxScale);
+    skybox_shader.SetUniformMat4f("uV", viewMatrix);
+    skybox_shader.SetUniformMat4f("uP", perspProjection);
+    skybox_shader.SetUniform1i("uSkybox", SkyBox_tu);
     CheckGLErrors(__LINE__, __FILE__);
 
     Shader::UnloadProgram();
@@ -639,7 +709,7 @@ int main()
     std::string path = "../Models/CubeTexture/Yokohama/";
     skybox.load_cubemap(path, "posx.jpg", "negx.jpg",
                         "posy.jpg", "negy.jpg",
-                        "posz.jpg", "negz.jpg", textureUnit);
+                        "posz.jpg", "negz.jpg", SkyBox_tu);
 
     /*------------------------------------------------*/
 
@@ -663,6 +733,8 @@ int main()
     auto r_skyBox = shape_maker::cube(1);
     /*------------------------------------------------*/
 
+        glActiveTexture(GL_TEXTURE0 + ShadowMap_tu);
+        glBindTexture(GL_TEXTURE_2D, ShadowMap.DepthBuffer.id_depth);
 
     /* Render loop */
     for (int i = 0; glfwWindowShouldClose(window) == 0; i++)
@@ -675,67 +747,30 @@ int main()
         ImGui::NewFrame();
         gui(r_LightViewline);
 
-        auto worldTrackBall = trackballs[0].matrix();
-        auto lightTrackBall = trackballs[1].matrix();
 
-        auto cur_viewMatrix = viewManipulator.apply_to_view(viewMatrix);
+        auto frame_viewMatrix = viewManipulator.apply_to_view(viewMatrix);
+
+        RenderEnviroment(skybox_shader, r_skyBox, frame_viewMatrix);
+
 
         glm::mat4 lightViewMatrix = CalculateLightViewMatrix(r_LightViewline);
         ShadowMap.set_projection(lightViewMatrix, distance_light, box3(2.0));
         auto lightView = ShadowMap.light_matrix();
 
 
-        RenderEnviroment(texture_shader, r_skyBox);
-
-        ShadowMap.Bind();
-        depth_shader.LoadProgram();
-        depth_shader.SetUniformMat4f("uT", worldTrackBall);
-        depth_shader.SetUniformMat4f("uLightMatrix", lightView);
-        depth_shader.SetUniform1f("uPlaneApprox", k_plane_approx);
-
-
-        if (shadowMap_mode == 4 || shadowMap_mode == 5)
-        {
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_FRONT);
-        }
-
-
-        RenderTerrain(depth_shader, r_terrain, cur_viewMatrix, lightDirec);
-        RenderCarModel(depth_shader, loadedModel, lightDirec, cur_viewMatrix);
-
-        glDisable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        Shader::UnloadProgram();
-
+        RenderToShadowMapTexture(depth_shader, frame_viewMatrix, lightDirec, loadedModel, r_terrain, lightView);
 
         glViewport(0, 0, 1000, 800);
 
-
-        SetShadowParamether(shadowMap_shader, lightView);
-        SetShadowParamether(Phong_shadowMap_shader, lightView);
-
-        glActiveTexture(GL_TEXTURE0 + shadowMapUt);
-        glBindTexture(GL_TEXTURE_2D, ShadowMap.DepthBuffer.id_depth);
-
-        if (terrain_selected_shader == 0)
-            RenderTerrain(Phong_shader, r_terrain, cur_viewMatrix, lightDirec);
-        if (terrain_selected_shader == 1)
-            RenderTerrain(shadowMap_shader, r_terrain, cur_viewMatrix, lightDirec);
-        if (terrain_selected_shader == 2)
-            RenderTerrain(Phong_shadowMap_shader, r_terrain, cur_viewMatrix, lightDirec);
+        SetShadowParamether(BlinnPhong_shadowMap_shader, lightView);
 
 
-        if (car_selected_shader == 0)
-            RenderCarModel(Phong_shader, loadedModel, lightDirec, cur_viewMatrix);
-        else if (car_selected_shader == 1)
-            RenderCarModel(shadowMap_shader, loadedModel, lightDirec, cur_viewMatrix);
-        else if (car_selected_shader == 2)
-            RenderCarModel(Phong_shadowMap_shader, loadedModel, lightDirec, cur_viewMatrix);
+
+        RenderTerrain(BlinnPhong_shadowMap_shader, r_terrain, frame_viewMatrix, lightDirec);
+        RenderCarModel(BlinnPhong_shadowMap_shader, loadedModel, frame_viewMatrix, lightDirec);
 
 
-        RenderDebug(flatAlpha_shader, r_plane, r_frame, r_Lightline, r_LightViewline, cur_viewMatrix);
+        RenderDebug(flatAlpha_shader, r_plane, r_frame, r_Lightline, r_LightViewline, frame_viewMatrix);
 
 
         ImGui::Render();

@@ -43,4 +43,9 @@ public:
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         CheckGLErrors(__LINE__, __FILE__);
     }
+    void undind()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        CheckGLErrors(__LINE__, __FILE__);
+    }
 };

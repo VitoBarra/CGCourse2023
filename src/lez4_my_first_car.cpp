@@ -47,7 +47,7 @@ int lez4(void) {
     printout_opengl_glsl_info();
 
     Shader basic_shader;
-    std::string vertex_shader = "../Shaders/";
+    std::string vertex_shader = "../Shaders/Prof/";
     basic_shader.create_program(vertex_shader + "Basic.vert", vertex_shader + "flat.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");

@@ -168,7 +168,7 @@ int lez11_1(void) {
 
 
     /* load the Shaders */
-    std::string shaders_path = "../Shaders/";
+    std::string shaders_path = "../Shaders/Prof/";
 
 /* Program Shaders used */
     Shader texture_shader;

@@ -173,7 +173,7 @@ int lez6(void) {
     printout_opengl_glsl_info();
 
     /* load the Shaders */
-    std::string vertex_shader = "../Shaders/";
+    std::string vertex_shader = "../Shaders/Prof/";
     Shader basic_shader;
     basic_shader.create_program(vertex_shader + "Basic.vert", vertex_shader + "FlatShading.frag");
     basic_shader.RegisterUniformVariable("uP");

@@ -86,17 +86,17 @@ void main(void)
 			}
 	 color = vec4(shaded*lit,1.0);
 	}else
-	if(uRenderMode==6) // VARIANCE SHADOW MAPPING
-		{
-			vec4 pLS = (vCoordLS/vCoordLS.w)*0.5+0.5;
-			vec2 m = texture( uShadowMap, pLS.xy).xy;
- 			float mu = m.x-uBias;
-			float diff = pLS.z - mu; 
-			if(diff > 0.0){
-			 lit = m.y / (m.y+diff*diff);
-			}
-		color = vec4(shaded*lit,1.0);
-		}				
+	if (uRenderMode==6)// VARIANCE SHADOW MAPPING
+	{
+		vec4 pLS = (vCoordLS/vCoordLS.w)*0.5+0.5;
+		vec2 m = texture(uShadowMap, pLS.xy).xy;
+		float mu = m.x-uBias;
+		float diff = pLS.z - mu;
+		if (diff > 0.0){
+			lit = m.y / (m.y+diff*diff);
+		}
+		color = vec4(shaded*lit, 1.0);
+	}
 	
 
 } 

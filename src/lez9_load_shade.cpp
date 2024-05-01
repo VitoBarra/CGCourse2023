@@ -111,7 +111,7 @@ int lez9() {
 
 
     /* load the Shaders */
-    std::string shaders_path = "../Shaders/";
+    std::string shaders_path = "../Shaders/Prof/";
     Shader diffuse_shader;
     diffuse_shader.create_program(shaders_path + "DiffusiveColor.vert",
                                   shaders_path + "ColorWithAlpha.frag");

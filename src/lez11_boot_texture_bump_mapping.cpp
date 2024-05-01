@@ -120,7 +120,7 @@ int lez11_2(void) {
 
 
     /* load the Shaders */
-    std::string shaders_path = "../Shaders/";
+    std::string shaders_path = "../Shaders/Prof/";
     Shader texture_shader;
     texture_shader.create_program(shaders_path + "texture1.vert", shaders_path + "texture1.frag");
     texture_shader.RegisterUniformVariable("uP");

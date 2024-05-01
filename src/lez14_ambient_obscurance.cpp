@@ -307,7 +307,7 @@ int lez14(void) {
     CheckGLErrors(__LINE__, __FILE__, true);
 
     /* load the Shaders */
-    std::string shaders_path = "../Shaders/";
+    std::string shaders_path = "../Shaders/Prof/";
     ao_shader.create_program(shaders_path + "fsq.vert", shaders_path + "ao.frag");
     ssaoKernel();
     g_buffer_shader.create_program(shaders_path + "g_buffer.vert", shaders_path + "g_buffer.frag");

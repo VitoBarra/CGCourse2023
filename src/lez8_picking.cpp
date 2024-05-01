@@ -184,7 +184,7 @@ int lez8(void) {
 
 
     /* load the Shaders */
-    std::string shaders_path = "../Shaders/";
+    std::string shaders_path = "../Shaders/Prof/";
     Shader basic_shader = *Shader::CreateShaderFromFile(shaders_path, "Basic.vert", "FlatShading.frag");
     basic_shader.RegisterUniformVariable("uP");
     basic_shader.RegisterUniformVariable("uV");
