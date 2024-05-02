@@ -33,13 +33,19 @@ uniform ivec2 uShadowMapSize;
 uniform float uBias;
 uniform int uKernelSize;
 
+bool ValidTextCoord(vec2 texCoord)
+{
+    return texCoord.x >= 0.0 && texCoord.x <= 1.0 && texCoord.y >= 0.0 && texCoord.y <= 1.0;
+}
+
 float CalculateShadowFactor(vec3 LightDir, vec3 normal)
 {
     vec3 projCoords = vLightFragPos.xyz/vLightFragPos.w;// divide by w to get NDC
     projCoords = projCoords * 0.5 + 0.5;// transform to [0,1] range
 
-    if (projCoords.x > 1.0 || projCoords.x < 0.0 || projCoords.y > 1.0 || projCoords.y < 0.0)
-        return 1.0;
+    if (!ValidTextCoord(projCoords.xy))
+    return 1.0;
+
 
     float lightDepth = texture(uShadowMap, projCoords.xy).x; // closest depth in shadow map
 
@@ -61,22 +67,28 @@ float CalculateShadowFactor(vec3 LightDir, vec3 normal)
         case 5:// percentage closer filtering
         {
             float shadow = 0.0;
-            vec2 texelSize = 1.0 / textureSize(uShadowMap, 0);
-            int kernelSize = uKernelSize;
-            int kenelRadius= int(floor(kernelSize/2.0));
+            int kenelRadius= int(floor(uKernelSize/2.0));
+            int invalidCoord = 0;
 
             for (int x = -kenelRadius; x <= kenelRadius; x++)
             for (int y = -kenelRadius; y <= kenelRadius; y++)
             {
                 vec2 offset = vec2(x, y)/uShadowMapSize;
+
+                if (!ValidTextCoord(projCoords.xy + offset))
+                {
+                    invalidCoord++;
+                    continue;
+                }
+
                 float pcfDepth = texture(uShadowMap, projCoords.xy + offset).x;
 
-                if(lightDepth + uBias <projCoords.z || dot(normal, LightDir)< 0)
-                    shadow +=  shadowValue;
+                if(pcfDepth + uBias <projCoords.z || dot(normal, LightDir)< 0)
+                shadow +=  shadowValue;
                 else shadow += 1;
             }
 
-            return shadow/(kernelSize * kernelSize);
+            return shadow/(uKernelSize * uKernelSize -invalidCoord);
         }
 
         default :// No shadow
@@ -87,9 +99,9 @@ float CalculateShadowFactor(vec3 LightDir, vec3 normal)
 vec3 GetDiffusiveColor()
 {
     if (uUseMaterial)
-        return uDiffuseColor;
+    return uDiffuseColor;
     else
-        return texture(uDiffuseTexture,vTexCoord.xy).rgb;
+    return texture(uDiffuseTexture,vTexCoord.xy).rgb;
 }
 
 // BlinnPhong computed in "any" space
@@ -116,8 +128,13 @@ vec3 BlinnPhong(vec3 lightDir, vec3 viewDir, vec3 normal)
     vec3 specular =uSpecularColor* pow(cosAlpha, uShininess);
 
 
-    return uEmissiveColor + uAmbientColor +
-    (diffuse + specular) * CalculateShadowFactor(lightDir, normal);
+    float shadowFactor = CalculateShadowFactor(lightDir, normal);
+
+    //debug
+    if (shadowFactor < 0.0)
+    return vec3(1.0, 0.0, 0.0);
+
+    return uEmissiveColor + uAmbientColor + (diffuse + specular) * shadowFactor;
 }
 
 

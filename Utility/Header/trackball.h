@@ -109,4 +109,8 @@ public:
 	glm::mat4 matrix() {
 		return scaling_matrix*rotation_matrix;
 	}
+
+	glm::mat4 RotationMatrix() {
+		return rotation_matrix;
+	}
 };

@@ -34,7 +34,7 @@
 trackball trackballs[2];
 view_manipulator viewManipulator;
 int trackBall_index;
-bool debugMode ;
+bool debugMode;
 
 
 /* shadowMap */
@@ -43,7 +43,7 @@ float distance_light;
 static int shadowMap_mode;
 int kernel_size;
 ShadowMap ShadowMap;
-glm::mat4 lightView;
+glm::mat4 lightCamera;
 
 /* paramters of the VSM (it should be 0.5) */
 float k_plane_approx;
@@ -55,6 +55,7 @@ bool car_userMaterial;
 int CarShininess;
 glm::vec3 CarEmissive;
 glm::vec3 CarAmbient;
+texture Diffuse;
 
 int terrain_selected_shader;
 bool terrain_usePhongar = false;
@@ -84,7 +85,7 @@ const char* current_hight = NULL;
 
 /*uniform texture*/
 int DiffuseTexture_tu = 0;
-int SkyBox_tu  = 1;
+int SkyBox_tu = 1;
 int ShadowMap_tu = 2;
 
 void PrintState()
@@ -141,7 +142,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 
-
 void Reset()
 {
     trackballs[0].set_center_radius(glm::vec3(0, 0, 0), 2.f);
@@ -183,12 +183,8 @@ void Reset()
     terrainEmissive = glm::vec3(0, 0, 0);
     terrainAmbient = glm::vec3(0, 0, 0);
 
-     car_selected_shader = 0;
-     terrain_selected_shader = 0;
-
-
-
-
+    car_selected_shader = 0;
+    terrain_selected_shader = 0;
 }
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -216,7 +212,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
             debugMode = !debugMode;
         if (key == GLFW_KEY_R)
             Reset();
-        PrintState();
+        if (key == GLFW_KEY_Q || key == GLFW_KEY_E || key == GLFW_KEY_R)
+            PrintState();
     }
 }
 
@@ -235,10 +232,9 @@ void RenderCarModel(Shader shader, std::vector<Renderable> loadedModel, const gl
 
     shader.SetUniformMat4f("uV", frameViewMatrix);
     shader.SetUniformVec4f("uLdir", lightTrackBall * lightDirec);
-    shader.SetUniform1i("uUseMaterial",car_userMaterial);
+    shader.SetUniform1i("uUseMaterial", car_userMaterial);
 
     shader.SetUniform1i("uDiffuseTexture", DiffuseTexture_tu);
-
 
 
     if (loadedModel.empty())
@@ -254,10 +250,11 @@ void RenderCarModel(Shader shader, std::vector<Renderable> loadedModel, const gl
 
 
 
+
         for (auto& renderablePice : loadedModel)
         {
             renderablePice.SetAsCurrentObjectToRender();
-            renderablePice.material.diffuse_texture.bind(DiffuseTexture_tu);
+            //renderablePice.material.diffuse_texture.bind(DiffuseTexture_tu);
             shader.SetUniformVec3f("uDiffuseColor", renderablePice.material.diffuse);
             shader.SetUniformVec3f("uSpecularColor", renderablePice.material.specular);
             shader.SetUniform1f("uRefractionIndex", renderablePice.material.RefractionIndex);
@@ -270,7 +267,7 @@ void RenderCarModel(Shader shader, std::vector<Renderable> loadedModel, const gl
     Shader::UnloadProgram();
 }
 
-void RenderDebug(Shader flatAlpha_shader, Renderable r_plane, Renderable r_frame, Renderable r_Lightline,
+void RenderDebug(Shader flatAlpha_shader, Renderable r_plane, Renderable r_frame, Renderable r_LightDirLine,
                  Renderable r_LightViewline,
                  glm::mat4 cur_viewMatrix)
 {
@@ -284,16 +281,16 @@ void RenderDebug(Shader flatAlpha_shader, Renderable r_plane, Renderable r_frame
 
         flatAlpha_shader.SetUniformMat4f("uT", lightTrackBall);
         flatAlpha_shader.SetUniformVec4f("uColor", 1.0, 1.0, 1.0, 1.0);
-        r_Lightline.SetAsCurrentObjectToRender();
-        r_Lightline.RenderLine();
+        r_LightDirLine.SetAsCurrentObjectToRender();
+        r_LightDirLine.RenderLine();
         CheckGLErrors(__LINE__, __FILE__);
 
 
-        flatAlpha_shader.SetUniformVec4f("uColor", 1.0, 0.0, 1.0, 1.0);
-        flatAlpha_shader.SetUniformMat4f("uT", identityMatrix);
-        r_LightViewline.SetAsCurrentObjectToRender();
-        r_LightViewline.RenderLine();
-        CheckGLErrors(__LINE__, __FILE__);
+        // flatAlpha_shader.SetUniformVec4f("uColor", 1.0, 0.0, 1.0, 1.0);
+        // flatAlpha_shader.SetUniformMat4f("uT", glm::inverse(lightTrackBall));
+        // r_LightViewline.SetAsCurrentObjectToRender();
+        // r_LightViewline.RenderLine();
+        // CheckGLErrors(__LINE__, __FILE__);
 
 
         flatAlpha_shader.SetUniformMat4f("uT", worldTrackBall);
@@ -362,25 +359,24 @@ void SetShadowParamether(Shader shader, glm::mat4 lightView)
     shader.SetUniform1i("uKernelSize", kernel_size);
 }
 
-glm::mat4 CalculateLightViewMatrix(Renderable& r_LightViewline)
+glm::mat4 CalculateLightViewMatrix(Renderable& r_LightViewline )
 {
-    auto worldTrackBall = trackballs[0].matrix();
-    auto lightTrackBall = trackballs[1].matrix();
 
-    auto eye = glm::vec3(0, distance_light, 0.f);
-    auto center = glm::vec3(0.f);
+    auto lightTrackBall = trackballs[1].RotationMatrix();
+
+    auto light_eye = glm::vec3(0, distance_light, 0.f);
+    auto target = glm::vec3(0.f);
     auto up = glm::vec3(0.f, 0.f, -1.f);
-    glm::mat4 lightViewMatrix;
 
 
-    lightViewMatrix = glm::lookAt(eye, center, up) * glm::inverse(lightTrackBall);
-    r_LightViewline = shape_maker::line(distance_light, center, eye);
+    glm::mat4  lightViewMatrix = glm::lookAt(light_eye, target, up)*glm::inverse(lightTrackBall)  ;
+    r_LightViewline = shape_maker::line(distance_light, target, light_eye);
 
 
     return lightViewMatrix;
 }
 
-void gui(Renderable& r_LightViewline)
+void DrawGUI(Renderable& r_LightViewline)
 {
     ImGui::BeginMainMenuBar();
 
@@ -441,7 +437,7 @@ void gui(Renderable& r_LightViewline)
 
 
         if (ImGui::SliderFloat("distance", &distance_light, 2.f, 100.f))
-            ShadowMap.set_projection(CalculateLightViewMatrix(r_LightViewline), distance_light, box3(1.0));
+            ShadowMap.set_projection(CalculateLightViewMatrix(r_LightViewline ), distance_light, box3(1.0));
         ImGui::SliderFloat("  plane approx", &k_plane_approx, 0.0, 1.0);
 
 
@@ -449,7 +445,7 @@ void gui(Renderable& r_LightViewline)
         if (shadowMap_mode == 5)
         {
             ImGui::InputInt("kernel size", &kernel_size, 2, 6);
-            kernel_size = std::max(kernel_size, 3);
+            kernel_size = std::clamp(kernel_size, 3,15);
             if (kernel_size % 2 == 0)
                 kernel_size++;
         }
@@ -526,9 +522,9 @@ void gui(Renderable& r_LightViewline)
 
 
 #endif
-void RenderToShadowMapTexture(Shader depth_shader, glm::mat4 frame_viewMatrix, glm::vec4 lightDirec, std::vector<Renderable> loadedModel, Renderable r_terrain, glm::mat4 lightView)
+void RenderToShadowMapTexture(Shader depth_shader, glm::mat4 frame_viewMatrix, glm::vec4 lightDirec,
+                              std::vector<Renderable> loadedModel, Renderable r_terrain, glm::mat4 lightView)
 {
-
     ShadowMap.Bind();
     depth_shader.LoadProgram();
     depth_shader.SetUniformMat4f("uLightMatrix", lightView);
@@ -547,8 +543,9 @@ void RenderToShadowMapTexture(Shader depth_shader, glm::mat4 frame_viewMatrix, g
 
     glDisable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    ShadowMap.undind();
+    ShadowMap.undind(1000, 800);
     Shader::UnloadProgram();
+
 }
 
 int main()
@@ -575,7 +572,6 @@ int main()
     /* set default value */
     Reset();
 
-
     /* initial light direction */
     glm::vec4 lightDirec = glm::vec4(0.0, 1.0, 0.0, 0.0);
     /* Transformation to setup the point of viewMatrix on the scene */
@@ -596,8 +592,10 @@ int main()
     CheckGLErrors(__LINE__, __FILE__);
 
     /* load from file */
-    std::vector<Renderable> loadedModel;
-    load_obj(loadedModel, "../Models/Datsun_280Z", "datsun_280Z.obj");
+    std::vector<Renderable> car_Model;
+    load_obj(car_Model, "../Models/Datsun_280Z", "datsun_280Z.obj");
+    Diffuse.load("../Models/Datsun_280Z/Materials/280z_Textures/disegno.png", DiffuseTexture_tu);
+
 
 
     std::string shaders_path = "../Shaders/Prof/";
@@ -661,10 +659,8 @@ int main()
 
     depth_shader.LoadProgram();
     depth_shader.SetUniformMat4f("uT", identityMatrix);
-    depth_shader.SetUniformMat4f("uLightMatrix", lightView);
+    depth_shader.SetUniformMat4f("uLightMatrix", lightCamera);
     depth_shader.SetUniform1f("uPlaneApprox", k_plane_approx);
-
-
 
 
     BlinnPhong_shadowMap_shader.LoadProgram();
@@ -684,13 +680,12 @@ int main()
     BlinnPhong_shadowMap_shader.SetUniform1i("uDiffuseTexture", DiffuseTexture_tu);
 
     // ShadowMap paramether
-    BlinnPhong_shadowMap_shader.SetUniformMat4f("uLightMatrix", lightView);
+    BlinnPhong_shadowMap_shader.SetUniformMat4f("uLightMatrix", lightCamera);
     BlinnPhong_shadowMap_shader.SetUniform2i("uShadowMapSize", ShadowMap.SizeW, ShadowMap.SizeH);
     BlinnPhong_shadowMap_shader.SetUniform1f("uBias", depth_bias);
     BlinnPhong_shadowMap_shader.SetUniform1i("uKernelSize", kernel_size);
     BlinnPhong_shadowMap_shader.SetUniform1i("uShadowMode", shadowMap_mode);
     BlinnPhong_shadowMap_shader.SetUniform1i("uShadowMap", ShadowMap_tu);
-
 
 
     skybox_shader.LoadProgram();
@@ -733,8 +728,8 @@ int main()
     auto r_skyBox = shape_maker::cube(1);
     /*------------------------------------------------*/
 
-        glActiveTexture(GL_TEXTURE0 + ShadowMap_tu);
-        glBindTexture(GL_TEXTURE_2D, ShadowMap.DepthBuffer.id_depth);
+    glActiveTexture(GL_TEXTURE0 + ShadowMap_tu);
+    glBindTexture(GL_TEXTURE_2D, ShadowMap.DepthBuffer.id_depth);
 
     /* Render loop */
     for (int i = 0; glfwWindowShouldClose(window) == 0; i++)
@@ -745,7 +740,7 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        gui(r_LightViewline);
+        DrawGUI(r_LightViewline);
 
 
         auto frame_viewMatrix = viewManipulator.apply_to_view(viewMatrix);
@@ -753,21 +748,17 @@ int main()
         RenderEnviroment(skybox_shader, r_skyBox, frame_viewMatrix);
 
 
-        glm::mat4 lightViewMatrix = CalculateLightViewMatrix(r_LightViewline);
-        ShadowMap.set_projection(lightViewMatrix, distance_light, box3(2.0));
-        auto lightView = ShadowMap.light_matrix();
+        ShadowMap.set_projection(CalculateLightViewMatrix(r_LightViewline), distance_light, box3(2.0));
+        lightCamera = ShadowMap.light_matrix();
 
 
-        RenderToShadowMapTexture(depth_shader, frame_viewMatrix, lightDirec, loadedModel, r_terrain, lightView);
+        RenderToShadowMapTexture(depth_shader, frame_viewMatrix, lightDirec, car_Model, r_terrain, lightCamera);
 
-        glViewport(0, 0, 1000, 800);
-
-        SetShadowParamether(BlinnPhong_shadowMap_shader, lightView);
-
+        SetShadowParamether(BlinnPhong_shadowMap_shader, lightCamera);
 
 
         RenderTerrain(BlinnPhong_shadowMap_shader, r_terrain, frame_viewMatrix, lightDirec);
-        RenderCarModel(BlinnPhong_shadowMap_shader, loadedModel, frame_viewMatrix, lightDirec);
+        RenderCarModel(BlinnPhong_shadowMap_shader, car_Model, frame_viewMatrix, lightDirec);
 
 
         RenderDebug(flatAlpha_shader, r_plane, r_frame, r_Lightline, r_LightViewline, frame_viewMatrix);

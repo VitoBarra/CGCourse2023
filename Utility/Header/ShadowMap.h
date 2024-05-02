@@ -26,7 +26,7 @@ public:
 
         /* TBD: set the view volume properly so that they are a close fit of the
         bounding box passed as paramter */
-        proj_matrix = glm::ortho(-4.f, 4.f, -4.f, 4.f, 0.f, distance_light * 2.f);
+        proj_matrix = glm::ortho(-10.f, 10.f, -10.f, 10.f, 0.f, distance_light * 2.f);
         //		proj_matrix = glm::perspective(3.14f/2.f,1.0f,0.1f, distance_light*2.f);
         return proj_matrix;
     }
@@ -43,9 +43,10 @@ public:
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
         CheckGLErrors(__LINE__, __FILE__);
     }
-    void undind()
+    void undind(int screen_w, int screen_h)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, screen_w, screen_h);
         CheckGLErrors(__LINE__, __FILE__);
     }
 };

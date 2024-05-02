@@ -40,7 +40,7 @@ struct texture {
         unsigned char *data;
         stbi_set_flip_vertically_on_load(true);
         data = stbi_load(name.c_str(), &x_size, &y_size, &n_components, 0);
-        //stbi__vertical_flip(data, x_size, y_size, n_components);
+        stbi_set_flip_vertically_on_load(false);
         glActiveTexture(GL_TEXTURE0 + textureUnit);
         glGenTextures(1, &id);
         glBindTexture(GL_TEXTURE_2D, id);
